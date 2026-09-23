@@ -35,18 +35,18 @@ require_once SOFTONE_PLUGIN_PATH . 'admin/woo2soft1_sync_products_page.php';
 require_once SOFTONE_PLUGIN_PATH . 'admin/order-sync-page.php';
 require_once SOFTONE_PLUGIN_PATH . 'admin/logs-page.php';
 require_once SOFTONE_PLUGIN_PATH . 'admin/logs-page.php';
-//require 'plugin-update-checker/plugin-update-checker.php';
+require 'plugin-update-checker/plugin-update-checker.php';
 
-//use YahnisElsts\PluginUpdateChecker\v5\PucFactory;
+use YahnisElsts\PluginUpdateChecker\v5\PucFactory;
 
-/*$myUpdateChecker = PucFactory::buildUpdateChecker(
-    'https://github.com/GeorgeWebDevCy/softone-woocommerce-integration',
+$myUpdateChecker = PucFactory::buildUpdateChecker(
+    'https://github.com/fyntrila/hellenicToolsBridge',
     __FILE__,
     'softone-woocommerce-integration'
 );
 
-//Set the branch that contains the stable release.
-$myUpdateChecker->setBranch('main');*/
+// Set the branch that contains the stable release.
+$myUpdateChecker->setBranch('main');
 
 // Initialize plugin
 function softone_woocommerce_integration_init() {
