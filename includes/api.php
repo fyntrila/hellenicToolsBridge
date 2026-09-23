@@ -360,6 +360,45 @@ class Softone_API {
 		]);
 		return $response;		
 	}
+	
+	public function updateInsertItems($lastUpdatedItems){
+		$products=array();
+		$update=0;
+		$insert=0;
+		$skipped=0;
+		
+		// $products[]=1;
+		// print_r($lastUpdatedItems);
+		foreach ($lastUpdatedItems as $updatedItem){
+			
+            //we split item code to get the item sku,the first letter before the dash is to describe the manufacturer in softone
+			$sku=explode('-',$updatedItem['item_code']);
+			// $sku_id=explode('-',$updatedItem['item_code'])[1];
+			if ($sku[0]<>'F') {
+				$skipped++;
+				continue;
+			}
+			// if (isset($updatedItem['dim1_erp_id'])) { continue; $sku .= "-".$updatedItem['dim1_erp_id'];}
+			// if (isset($updatedItem['dim2_erp_id'])) { continue;  $sku .= "-".$updatedItem['dim2_erp_id'];}
+			
+			$product_id = wc_get_product_id_by_sku( $sku[1] );
+			if ( $product_id ) {
+				$products['items'][$sku[1]] = $product_id ;
+				$update++;
+				//wc_get_product( $product_id );
+			}
+			else {
+				$products['items'][$sku[1]] = 'to be inserted';
+				$insert++;
+			}
+			//= wc_get_products( array( 'sku' => $sku ) );
+		}
+		// print_r($product);
+		$products['update']=$update;
+		$products['insert']=$insert;
+		$products['skipped']=$skipped;
+		return $products;
+	}
 //	https://hellenictooloe.oncloud.gr/s1services/js/HellenicTool.WServices/getLastUpdatedItems
 	public function createCustomer($order){
 		$woocommerce_customer_id="woocommerce_user_id:".$order->get_customer_id();

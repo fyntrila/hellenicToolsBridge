@@ -9,7 +9,7 @@ function softone_sync_products_page() {
             // echo '<div class="notice notice-success"><p>' . esc_html($result) . '</p></div>';
         // } else {
             echo '<div class="notice notice-error"><p>Press button synchronize products.</p></div>';
-        }
+      }
     //}
 	$start_time = microtime(true);
 	$args = array(
@@ -28,15 +28,20 @@ function softone_sync_products_page() {
         <h1>Product Sync</h1>
 		<form method="post">
             <input type="hidden" name="sync_products" value="1" />
-
 			<label for="syncDate">Ελεγχο για αλλαγες απο:</label>
 			<input type="date" id="syncDate" name="syncDate">
 			<label for="WebActive">Μονο WebActive:</label>
 			<input type="checkbox" id="WebActive" name="WebActive" value="1">	
-	
             <?php submit_button('Sync Products'); ?>
         </form>
+		
+		<form method="post">
+			<input type="hidden" name="update_or_insert" value="1"/>
+			<?php submit_button('Check for update or insert'); ?>
+		</form>
+		
 			<?php 
+			
 			if (isset($_POST['sync_products'])): 
 				$metr=0;
 				$WebActive=0;
@@ -116,16 +121,45 @@ function softone_sync_products_page() {
 				echo $metr. ' changes found since '.$fromDate;
 				echo $WebActive;
 				endif; 
+				
+				if (isset($_POST['update_or_insert'])): 
+				$start_time = microtime(true);
+				$args = array(
+					'limit' => -1,
+					'status' => 'publish',
+					'return' => 'ids',
+				);
+				$product_ids = wc_get_products( $args );
+				$api = new Softone_API();
+					$lastUpdatedItems=$api->getLastUpdatedItems('2026-01-01T00:00:00Z');
+					// echo "<pre>";
+					// print_r($lastUpdatedItems['body']);
+					// echo "</pre>";
+					echo count($lastUpdatedItems['body']);
+					if(!empty($lastUpdatedItems['body'])){
+						// echo "<pre>";
+						// print_r($lastUpdatedItems['body']);
+						// echo "</pre>";
+						$updateInsertItems=$api->updateInsertItems($lastUpdatedItems['body']);
+						echo "<pre>";
+						print_r($updateInsertItems['items']);
+						echo "</pre>";
+					}
+					else {
+						echo "empty last update items";
+					}
+				endif;
+				
 			// if($i==100){
 				// End Clock Time in Seconds
 				$end_time = microtime(true);
 
 				// Calculate the Script Execution Time
 				$execution_time = ($end_time - $start_time);
-				if(isset($metr))
-					echo "Totals: Update.".$metr
+				// if(isset($metr))
+					// echo "Totals: ".$metr
 				//$totals['update']
-				." Insert.".$totals['insert']."in ".$execution_time." seconds";
+				echo "Update:".$updateInsertItems['update']." Insert.".$updateInsertItems['insert']." Skipped:".$updateInsertItems['skipped']."in ".$execution_time." seconds";
 				// die;
 			// }
 		?>
