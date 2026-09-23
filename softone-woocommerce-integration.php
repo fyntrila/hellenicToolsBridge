@@ -3,7 +3,7 @@
  * Plugin Name: Softone WooCommerce Integration
  * Plugin URI: https://wordpress.org/plugins/softone-woocommerce-integration/
  * Description: Integrates WooCommerce with Softone API for customer, product, and order synchronization.
- * Version: 1.0.5
+ * Version: 1.0.6
  * Author: Ninjaweb implementation
  * Author URI: https://ninjaweb.gr
  * Text Domain: softone-woocommerce-integration
@@ -131,13 +131,13 @@ function softone_register_settings() {
 function softone_activate() {
     // Set default values for the options if they don't exist
     if (get_option('softone_api_username') === false) {
-        update_option('softone_api_username', 'default_username');
+        update_option('softone_api_username', 'WebUser');
     }
     if (get_option('softone_api_password') === false) {
-        update_option('softone_api_password', 'default_password');
+        update_option('softone_api_password', 'hellenic2025!@#');
     }
     if (get_option('softone_client_id') === false) {
-        update_option('softone_client_id', 'default_client_id');
+        update_option('softone_client_id', '1000');
     }
     if (get_option('softone_synced_customers') === false) {
         update_option('softone_synced_customers', []);
