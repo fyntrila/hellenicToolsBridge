@@ -47,7 +47,7 @@ function softone_sync_products_page() {
 				$WebActive=0;
 				$WebActive=(isset($_POST['WebActive']))?$_POST['WebActive']:0;
 				// echo "mpika <pre>";
-				$fromDate=(!empty($_POST['syncDate']))?$_POST['syncDate']:'2025-11-29T05:21:41Z';
+				$fromDate=(!empty($_POST['syncDate']))?$_POST['syncDate']:'2026-09-16T00:00:00Z';
 				// $fromDate='2025-11-29T05:21:41Z';
 				// $WebActive=(isset($_POST['WebActive']))?1:null;
 				$lastUpdatedItems=$api->getLastUpdatedItems($fromDate);?>
@@ -131,7 +131,7 @@ function softone_sync_products_page() {
 				);
 				$product_ids = wc_get_products( $args );
 				$api = new Softone_API();
-					$lastUpdatedItems=$api->getLastUpdatedItems('2026-01-01T00:00:00Z');
+					$lastUpdatedItems=$api->getLastUpdatedItems('2026-09-16T00:00:00Z');
 					// echo "<pre>";
 					// print_r($lastUpdatedItems['body']);
 					// echo "</pre>";
