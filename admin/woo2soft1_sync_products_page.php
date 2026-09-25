@@ -132,9 +132,9 @@ function softone_sync_products_page() {
 				$product_ids = wc_get_products( $args );
 				$api = new Softone_API();
 					$lastUpdatedItems=$api->getLastUpdatedItems('2026-09-16T00:00:00Z');
-					// echo "<pre>";
-					// print_r($lastUpdatedItems['body']);
-					// echo "</pre>";
+					echo "<pre>";
+					print_r($lastUpdatedItems['body']);
+					echo "</pre>";
 					echo count($lastUpdatedItems['body']);
 					if(!empty($lastUpdatedItems['body'])){
 						// echo "<pre>";

@@ -23,27 +23,32 @@ function softone_products_page() {
         <table class="widefat fixed" cellspacing="0">
             <thead>
                 <tr>
-                    <th>ID</th>
-                    <th>Code</th>
-                    <th>Name</th>
+                    <th>Counter</th>
+                    <th>SKU</th>
+                    <th>Description</th>
                     <th>Price</th>
                     <th>Category</th>
-                    <th>SubCategory</th>
-                    <th>Barcode</th>
-                    <th>Stock</th>
+                    <th>Group</th>
+                    <th>Manufacturers</th>
+                    <th>Action</th>
                 </tr>
             </thead>
             <tbody>
-                <?php foreach ($result['products'] as $product): ?>
+                <?php
+					$aa=0;
+					foreach ($result['products'] as $product): 
+					$aa++;
+				?>
+					
                 <tr>
-                    <td><?php echo esc_html($product['MTRL']); ?></td>
-                    <td><?php echo esc_html($product['CODE']); ?></td>
-                    <td><?php echo esc_html($product['DESC']); ?></td>
-                    <td><?php echo esc_html($product['RETAILPRICE']); ?></td>
-                    <td><?php echo esc_html($product['COMMECATEGORY_NAME']); ?></td>
-                    <td><?php echo esc_html($product['SUBMECATEGORY_NAME']); ?></td>
-                    <td><?php echo esc_html($product['BARCODE']); ?></td>
-                    <td><?php echo esc_html($product['Stock QTY']); ?></td>
+                    <td><?php echo esc_html($aa); ?></td>
+                    <td><?php echo esc_html($product['item_code']); ?></td>
+                    <td><?php echo esc_html($product['item_descr']); ?></td>
+                    <td><?php echo esc_html($product['price_WholeSale']); ?></td>
+                    <td><?php echo esc_html($product['item_category']); ?></td>
+                    <td><?php echo esc_html($product['item_group']); ?></td>
+                    <td><?php echo esc_html($product['Manufacturers']); ?></td>
+                    <td><?php echo esc_html($product['action']); ?></td>
                 </tr>
                 <?php endforeach; ?>
             </tbody>
