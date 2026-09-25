@@ -270,7 +270,8 @@ function softone_sync_products() {
     if (class_exists('WooCommerce')) {
         $api = new Softone_API();
         // $products = $api->get_products();
-		$fromDate='2026-09-16T00:00:00Z';
+		$fromDate=$api->lastUpdateDate();
+		echo "Last update:".$fromDate;
         $products = $api->getLastUpdatedItems($fromDate);
 		// echo "<pre>";
 		// print_r($products['body']);
@@ -286,9 +287,7 @@ function softone_sync_products() {
                 if ($existing_product_id) {
                     // Update existing product
                     $product_obj = new WC_Product($existing_product_id);
-					if($product['WebActive']==0){
-						$product_obj->set_status('draft');
-					}
+					if($product['WebActive']==0) $product_obj->set_status('draft');
                     $product_obj->set_name(sanitize_text_field($product['item_descr']));
                     $product_obj->set_price(floatval($product['price_WholeSale']));
                     $product_obj->set_regular_price(floatval($product['price_WholeSale']));
@@ -329,6 +328,8 @@ function softone_sync_products() {
 					$result[$sku]=$product;
 					$result[$sku]['action']='update';
                 } else {
+					if($product['WebActive']==0) continue;
+						
                     // Create new product
                     $new_product = new WC_Product();
                     $new_product->set_name(sanitize_text_field($product['item_descr']));
@@ -372,9 +373,16 @@ function softone_sync_products() {
 					$result[$sku]['action']='insert';
                 }
             }
-            update_option('softone_synced_products', array_map('sanitize_text_field', $result));
-            softone_log('sync_products', 'Products synchronized successfully.');
-            return ['success' => true, 'message' => 'Products synchronized successfully.', 'products' => $result];
+			if(!empty($products['body'])){
+				update_option('softone_synced_products', array_map('sanitize_text_field', $result));
+				softone_log('sync_products', 'Products synchronized successfully.');
+				return ['success' => true, 'message' => 'Products synchronized successfully.', 'products' => $result];
+			}
+			else {
+				softone_log('sync_products', 'No products to be synchronized.');
+				return ['success' => true, 'message' => 'No products to be synchronized.', 'products' => $result];
+			}
+           
         } else {
             softone_log('sync_products', 'Failed to synchronize products.');
             return ['success' => false, 'message' => 'Failed to synchronize products.'];

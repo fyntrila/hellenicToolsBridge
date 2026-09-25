@@ -1,0 +1,9 @@
+Product Update/Insert
+	Update if product exists:
+ 		if webactive = 0  set product status to draft
+	Insert if product doesn't exit
+		if webactive=0 skip insert
+	Fixed product sync page to display affected product
+
+TODO
+must keep last updated date
