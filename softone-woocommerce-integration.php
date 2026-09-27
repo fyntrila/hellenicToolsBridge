@@ -291,7 +291,7 @@ function softone_sync_products() {
                     $product_obj->set_name(sanitize_text_field($product['item_descr']));
                     $product_obj->set_price(floatval($product['price_WholeSale']));
                     $product_obj->set_regular_price(floatval($product['price_WholeSale']));
-                    $product_obj->set_stock_quantity(intval($prduct['rem']));
+                    $product_obj->set_stock_quantity(intval($product['rem']));
                     $product_obj->set_manage_stock(true);
 
                     // Update categories and subcategories
