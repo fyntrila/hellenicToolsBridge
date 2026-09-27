@@ -3,7 +3,7 @@
  * Plugin Name: Softone WooCommerce Integration
  * Plugin URI: https://wordpress.org/plugins/softone-woocommerce-integration/
  * Description: Integrates WooCommerce with Softone API for customer, product, and order synchronization.
- * Version: 1.0.10
+ * Version: 1.0.11
  * Author: Ninjaweb implementation
  * Author URI: https://ninjaweb.gr
  * Text Domain: softone-woocommerce-integration
@@ -291,7 +291,7 @@ function softone_sync_products() {
                     $product_obj->set_name(sanitize_text_field($product['item_descr']));
                     $product_obj->set_price(floatval($product['price_WholeSale']));
                     $product_obj->set_regular_price(floatval($product['price_WholeSale']));
-                    $product_obj->set_stock_quantity(intval(9999));
+                    $product_obj->set_stock_quantity(intval($prduct['rem']));
                     $product_obj->set_manage_stock(true);
 
                     // Update categories and subcategories
