@@ -35,17 +35,21 @@ function softone_customers_page() {
                 </tr>
             </thead>
             <tbody>
-                <?php foreach ($result['customers'] as $customer): ?>
+                <?php print_r($result);
+				foreach ($result['customers'] as $customer_index=>$customer_id): 
+				echo $customer_id;
+				$customer = new WC_Customer( $customer_id );
+   echo $customer->get_email() . ' ' . $customer->get_billing_last_name();?>
                 <tr>
-                    <td><?php echo esc_html($customer['TRDR']); ?></td>
-                    <td><?php echo esc_html($customer['CODE']); ?></td>
-                    <td><?php echo esc_html($customer['NAME']); ?></td>
-                    <td><?php echo esc_html($customer['EMAIL']); ?></td>
-                    <td><?php echo esc_html($customer['ADDRESS']); ?></td>
-                    <td><?php echo esc_html($customer['CITY']); ?></td>
-                    <td><?php echo esc_html($customer['ZIP']); ?></td>
-                    <td><?php echo esc_html($customer['COUNTRY']); ?></td>
-                    <td><?php echo esc_html($customer['PHONE1']); ?></td>
+                    <td><?php// echo esc_html($customer['TRDR']); ?></td>
+                    <td><?php //echo esc_html($customer['CODE']); ?></td>
+                    <td><?php //echo esc_html($customer['NAME']); ?></td>
+                    <td><?php// echo esc_html($customer['EMAIL']); ?></td>
+                    <td><?php// echo esc_html($customer['ADDRESS']); ?></td>
+                    <td><?php// echo esc_html($customer['CITY']); ?></td>
+                    <td><?php //echo esc_html($customer['ZIP']); ?></td>
+                    <td><?php// echo esc_html($customer['COUNTRY']); ?></td>
+                    <td><?php //echo esc_html($customer['PHONE1']); ?></td>
                 </tr>
                 <?php endforeach; ?>
             </tbody>

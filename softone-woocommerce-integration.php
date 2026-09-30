@@ -55,22 +55,22 @@ function softone_woocommerce_integration_init() {
     // Register settings
     add_action('admin_init', 'softone_register_settings');
     // Add cron jobs
-   // add_action('softone_cron_sync_products', 'softone_sync_products');
-   // add_action('softone_cron_sync_orders', 'softone_sync_orders');
+    add_action('softone_cron_sync_products', 'softone_sync_products');
+	add_action('softone_cron_sync_orders', 'softone_sync_orders');
     // Hook into WooCommerce order processed
     add_action('woocommerce_checkout_order_processed', 'softone_create_order', 10, 1);
 	//add_action( 'woocommerce_new_order', 'softone_create_order', 10, 1 );
 	//add_action( 'save_post_shop_order', 'softone_create_order', 10, 1 );
 	add_action( 'woocommerce_update_order', 'softone_create_order', 10, 1 );
 	// Hook into post product save
-	add_action( 'save_post', 'product_post_save', 10, 3 );//we check if is a product post inside called function
+//	add_action( 'save_post', 'product_post_save', 10, 3 );//we check if is a product post inside called function
 	//Hook to allow only numbers on phone
-	add_action('wp_footer', 'ecommercehints_billing_phone_validation');
+//	add_action('wp_footer', 'ecommercehints_billing_phone_validation');
  //alt hook wp_after_insert_post
     // Hook into WooCommerce customer creation
  //   add_action('user_register', 'softone_send_new_customer_to_api', 10, 1);
     // Schedule cron jobs
-   // softone_schedule_cron_jobs();
+   softone_schedule_cron_jobs();
 }
 /**
  * Snippet Name:	WooCommerce Only Allow Number Input For Billing Phone
@@ -114,11 +114,11 @@ register_deactivation_hook(__FILE__, 'softone_clear_scheduled_cron_jobs');
 // Admin menu setup
 function softone_admin_menu() {
     add_menu_page('Softone Integration', 'Softone', 'manage_options', 'softone-settings', 'softone_settings_page');
- //   add_submenu_page('softone-settings', 'Customer Sync', 'Customers', 'manage_options', 'softone-customers', 'softone_customers_page');
-   add_submenu_page('softone-settings', 'Product Sync', 'ProductsG', 'manage_options', 'softone-products','softone_products_page');
- //   add_submenu_page('softone-settings', 'Order Sync', 'Orders', 'manage_options', 'softone-orders', 'softone_orders_page');
-   add_submenu_page('softone-settings', 'Product Sync', 'Products', 'manage_options', 'softone2woo-sync-products','softone_sync_products_page');
-   add_submenu_page('softone-settings', 'Live Logging', 'Logs', 'manage_options', 'softone-logs', 'softone_logs_page');
+	add_submenu_page('softone-settings', 'Customer Sync', 'Customers', 'manage_options', 'softone-customers', 'softone_customers_page');
+	add_submenu_page('softone-settings', 'Product Sync', 'Products', 'manage_options', 'softone-products','softone_products_page');
+	add_submenu_page('softone-settings', 'Order Sync', 'Orders', 'manage_options', 'softone-orders', 'softone_orders_page');
+   //add_submenu_page('softone-settings', 'Product Sync', 'Products', 'manage_options', 'softone2woo-sync-products','softone_sync_products_page');
+	add_submenu_page('softone-settings', 'Live Logging', 'Logs', 'manage_options', 'softone-logs', 'softone_logs_page');
 }
 
 // Register settings
@@ -287,11 +287,16 @@ function softone_sync_products() {
                 if ($existing_product_id) {
                     // Update existing product
                     $product_obj = new WC_Product($existing_product_id);
-					if($product['WebActive']==0) $product_obj->set_status('draft');
+					// if($product['WebActive']==0) $product_obj->set_status('draft');
                     $product_obj->set_name(sanitize_text_field($product['item_descr']));
                     $product_obj->set_price(floatval($product['price_WholeSale']));
                     $product_obj->set_regular_price(floatval($product['price_WholeSale']));
-                    $product_obj->set_stock_quantity(intval($product['rem']));
+                    if($product['WebActive']==0) {
+						$product_obj->set_stock_quantity(intval('0'));
+					}
+					else {
+						$product_obj->set_stock_quantity(intval($product['rem']));
+					}
                     $product_obj->set_manage_stock(true);
 
                     // Update categories and subcategories
@@ -336,7 +341,7 @@ function softone_sync_products() {
                     $new_product->set_sku(sanitize_text_field($sku));
                     $new_product->set_price(floatval($product['price_WholeSale']));
                     $new_product->set_regular_price(floatval($product['price_WholeSale']));
-                    $new_product->set_stock_quantity(intval(9999));
+                    $new_product->set_stock_quantity(intval($product['rem']));
                     $new_product->set_manage_stock(true);
 
                     // Set categories and subcategories
@@ -370,6 +375,7 @@ function softone_sync_products() {
                     }
 
                     $new_product->save();
+					$result[$sku]=$product;
 					$result[$sku]['action']='insert';
                 }
             }
@@ -393,12 +399,27 @@ function softone_sync_products() {
 function softone_sync_orders() {
     if (class_exists('WooCommerce')) {
         $api = new Softone_API();
+		//date time update, not all orders
         $orders = wc_get_orders(['limit' => -1]);
         foreach ($orders as $order) {
             $api->create_order($order);
         }
         softone_log('sync_orders', 'Orders synchronized successfully.');
         return 'Orders synchronized successfully.';
+    }
+}
+function softone_sync_customers() {
+    if (class_exists('WooCommerce')) {
+        $api = new Softone_API();
+		
+		$customer_query = new WP_User_Query(
+		  array(
+			 'fields' => 'ID',
+			 'role' => 'customer',         
+		  )
+		);
+		return ['success' => true, 'message' => 'No products to be synchronized.', 'customers' => $customer_query->get_results()];
+
     }
 }
 

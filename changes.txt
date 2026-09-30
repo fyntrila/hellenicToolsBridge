@@ -5,5 +5,4 @@ Product Update/Insert
 		if webactive=0 skip insert
 	Fixed product sync page to display affected product
 
-TODO
-must keep last updated date
+	Keep last updated date and continue from there on (in product_syn_log.txt)
