@@ -26,30 +26,26 @@ function softone_customers_page() {
                     <th>ID</th>
                     <th>Code</th>
                     <th>Name</th>
-                    <th>Email</th>
-                    <th>Address</th>
-                    <th>City</th>
-                    <th>Zip</th>
-                    <th>Country</th>
+                    <th>Afm</th>
                     <th>Phone</th>
+                    <th>Email</th>
                 </tr>
             </thead>
             <tbody>
-                <?php print_r($result);
-				foreach ($result['customers'] as $customer_index=>$customer_id): 
-				echo $customer_id;
-				$customer = new WC_Customer( $customer_id );
-   echo $customer->get_email() . ' ' . $customer->get_billing_last_name();?>
+                <?php 
+				echo "<pre>";
+				print_r($result);
+				foreach ($result['customers'] as $c=>$customer): 
+				// echo $customer['cust_ID'];
+				// $customer = new WC_Customer( $customer_id );
+				// echo $customer->get_email() . ' ' . $customer->get_billing_last_name();?>
                 <tr>
-                    <td><?php// echo esc_html($customer['TRDR']); ?></td>
-                    <td><?php //echo esc_html($customer['CODE']); ?></td>
-                    <td><?php //echo esc_html($customer['NAME']); ?></td>
-                    <td><?php// echo esc_html($customer['EMAIL']); ?></td>
-                    <td><?php// echo esc_html($customer['ADDRESS']); ?></td>
-                    <td><?php// echo esc_html($customer['CITY']); ?></td>
-                    <td><?php //echo esc_html($customer['ZIP']); ?></td>
-                    <td><?php// echo esc_html($customer['COUNTRY']); ?></td>
-                    <td><?php //echo esc_html($customer['PHONE1']); ?></td>
+                    <td><?php echo esc_html($customer['cust_ID']); ?></td>
+                    <td><?php echo esc_html($customer['cust_Code']); ?></td>
+                    <td><?php echo esc_html($customer['cust_descr']); ?></td>
+                    <td><?php echo esc_html($customer['custAfm']); ?></td>
+                    <td><?php echo esc_html($customer['cust_phone']); ?></td>
+                    <td><?php echo esc_html($customer['cust_Email']); ?></td>
                 </tr>
                 <?php endforeach; ?>
             </tbody>

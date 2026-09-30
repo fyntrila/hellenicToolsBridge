@@ -125,20 +125,20 @@ class Softone_API {
 		
 		$data['service'] = sanitize_text_field($service);
 		$data['session'] = $this->session;
-		if($data['service']=='getLastUpdatedItems'){
-			$endpoint="https://hellenictooloe.oncloud.gr/s1services/js/HellenicTool.WServices/getLastUpdatedItems";
-			$response = wp_remote_post($endpoint, [
-				'body' => wp_json_encode($data),
-				'headers' => ['Content-Type' => 'application/json','Content-Encoding' => 'gzip','charset' => 'gzip'
-				]
-			]);
-		}
-		else{
-			$response = wp_remote_post($this->endpoint, [
+		// if($data['service']=='getLastUpdatedItems'){
+			// $endpoint="https://hellenictooloe.oncloud.gr/s1services/js/HellenicTool.WServices/getLastUpdatedItems";
+			// $response = wp_remote_post($endpoint, [
+				// 'body' => wp_json_encode($data),
+				// 'headers' => ['Content-Type' => 'application/json','Content-Encoding' => 'gzip','charset' => 'gzip'
+				// ]
+			// ]);
+		// }
+		// else{
+			$response = wp_remote_post($this->endpoint.$data['service'], [
 				'body' => json_encode($data),
 				'headers' => ['Content-Type' => 'application/json','Content-Encoding' => 'gzip','charset' => 'gzip']
 			]);
-		}
+		// }
 		if (is_wp_error($response)) {
 			softone_log($service, 'API request failed: ' . iconv("Windows-1253", "UTF-8", $response->get_error_message()));
 			softone_log($endpoint, 'API request failed: ' . iconv("Windows-1253", "UTF-8", $response->get_error_message()));
@@ -351,6 +351,38 @@ class Softone_API {
 		}
 		
 	}
+	
+	public function fetchCustomer($data){
+		/*		https://hellenictooloe.oncloud.gr/s1services/js/HellenicTool.WServices/fetchCustomer
+			Request
+			{
+			"clientID": "9J8…L11",
+			"srchAfm": "014827616",
+			"email": "atraposbio@gmail.com",
+			"phone": "6973270292",
+			"trdr": "127096"
+			}
+			
+			Response
+			[
+			{
+			"cust_ID": "127096",
+			"cust_Code": "03500900000000000001",
+			"cust_descr": "ΧΑΝ ΜΑΡΙΑ",
+			"custAfm": "014827616",
+			"cust_phone": "6973270292",
+			"cust_Email": "atraposbio@gmail.com",
+			"company_branch": "1000"
+			}
+			]
+		*/
+		$response = $this->request('/js/HellenicTool.WServices/fetchCustomer', [
+			'clientID' => $this->session,
+			'email' =>$data['email'],
+			'limit' =>1
+		]);
+		return $response;
+	}
 	public function lastUpdateDate (){
 		$date = new DateTime('now', new DateTimeZone('UTC'));
 		$dateString1 = "2026-01-01T00:00:00Z";
@@ -383,7 +415,7 @@ class Softone_API {
 	}
 	
 	public function getLastUpdatedItems($fromDate){
-		$response = $this->request('getLastUpdatedItems', [
+		$response = $this->request('/js/HellenicTool.WServices/getLastUpdatedItems', [
 			'clientID' => $this->session,
 			'appID' => '1000',
 			'updateItemDate'=> $fromDate,

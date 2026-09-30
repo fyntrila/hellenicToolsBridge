@@ -6,3 +6,24 @@ Product Update/Insert
 	Fixed product sync page to display affected product
 
 	Keep last updated date and continue from there on (in product_syn_log.txt)
+
+TODO
+---Customer sync
+test if users with roll customer exist in softone
+if user with roll customer does not exist in softone 
+	test to push users with roll customer in softone
+else
+	test to update users with roll customer in softone
+---Order sync
+test to add an order on order checkout (or with sync button) 
+ check if customer exists in softone
+ 
+ if customer does not exist in softone 
+   test to add customer
+add order in softone
+
+test order update on change 
+  push changes to softone
+
+
+

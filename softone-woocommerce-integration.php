@@ -182,7 +182,9 @@ function softone_create_order($order_id) {
     if ($order) {
 		$api = new Softone_API();
 		$customer_phone = $order->get_billing_phone();
-		$soft1CustomerCode = $api->findCustomerPhone($customer_phone);		
+		$customer_email = $order->get_billing_email();
+		$soft1CustomerCode = $api->fetchCustomer(['email'=>$customer_email]);		
+		// $soft1CustomerCode = $api->findCustomerPhone($customer_phone);		
 		
         if($soft1CustomerCode){
 			$api->create_order($order, $soft1CustomerCode);
@@ -418,7 +420,16 @@ function softone_sync_customers() {
 			 'role' => 'customer',         
 		  )
 		);
-		return ['success' => true, 'message' => 'No products to be synchronized.', 'customers' => $customer_query->get_results()];
+		$customers=$customer_query->get_results();
+		
+		foreach ($customers as $c=>$customer_id){
+			$customer = new WC_Customer( $customer_id );
+			$customer_email=$customer->get_billing_email();
+			$response=$api->fetchCustomer(['email'=>'atraposbio@gmail.com']);
+			$found_customers[$customer_id]=$response['body'][0];
+		}
+		
+		return ['success' => true, 'message' => 'No products to be synchronized.', 'customers' => $found_customers];
 
     }
 }
