@@ -29,12 +29,14 @@ function softone_customers_page() {
                     <th>Afm</th>
                     <th>Phone</th>
                     <th>Email</th>
+                    <th>Status</th>
                 </tr>
             </thead>
             <tbody>
                 <?php 
 				echo "<pre>";
 				print_r($result);
+			
 				foreach ($result['customers'] as $c=>$customer): 
 				// echo $customer['cust_ID'];
 				// $customer = new WC_Customer( $customer_id );
@@ -46,6 +48,7 @@ function softone_customers_page() {
                     <td><?php echo esc_html($customer['custAfm']); ?></td>
                     <td><?php echo esc_html($customer['cust_phone']); ?></td>
                     <td><?php echo esc_html($customer['cust_Email']); ?></td>
+                    <td><?php echo esc_html($customer['status']); ?></td>
                 </tr>
                 <?php endforeach; ?>
             </tbody>

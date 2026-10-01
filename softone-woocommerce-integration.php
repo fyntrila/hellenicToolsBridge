@@ -56,12 +56,12 @@ function softone_woocommerce_integration_init() {
     add_action('admin_init', 'softone_register_settings');
     // Add cron jobs
     add_action('softone_cron_sync_products', 'softone_sync_products');
-	add_action('softone_cron_sync_orders', 'softone_sync_orders');
+	#add_action('softone_cron_sync_orders', 'softone_sync_orders');
     // Hook into WooCommerce order processed
-    add_action('woocommerce_checkout_order_processed', 'softone_create_order', 10, 1);
+   # add_action('woocommerce_checkout_order_processed', 'softone_create_order', 10, 1);
 	//add_action( 'woocommerce_new_order', 'softone_create_order', 10, 1 );
 	//add_action( 'save_post_shop_order', 'softone_create_order', 10, 1 );
-	add_action( 'woocommerce_update_order', 'softone_create_order', 10, 1 );
+	#add_action( 'woocommerce_update_order', 'softone_create_order', 10, 1 );
 	// Hook into post product save
 //	add_action( 'save_post', 'product_post_save', 10, 3 );//we check if is a product post inside called function
 	//Hook to allow only numbers on phone
@@ -237,6 +237,33 @@ function product_post_save( $post_ID, $post, $update ) {
 	}
 }
 // Function to send new customers to Softone
+/*
+EndPoint: https://hellenictooloe.oncloud.gr/s1services/js/HellenicTool.WServices/createCustomer
+Request
+{
+"clientID": "9J….11",
+CONQUEST 7
+"customer_name": "Test Customer WS",
+"customer_code": "*",
+"customer_category": 3099,
+"customer_address": "Athens",
+"customer_zip": "10000",
+"customer_city": "Athens",
+"customer_district": "district test",
+"customer_phone": "customer_phone",
+"customer_email": "test@test.gr",
+"customer_irsdata": "1101",
+"customer_webID": "101",
+"AFM": "777777777",
+"customer_occupation": "online shop",
+"customer_country": 1000
+}
+Response
+{
+"customer_ID": 129779,
+"success": true
+}
+*/
 function softone_send_new_customer_to_api($customer_id) {
     $user = get_userdata($customer_id);
     if ($user && in_array('customer', $user->roles)) {
@@ -264,6 +291,8 @@ function softone_send_new_customer_to_api($customer_id) {
         softone_log('send_new_customer', 'New customer sent to Softone: ' . $user->user_login);
     }
 }
+
+
 function woo2soft1_sync_products() {
 	return;
 }
@@ -424,12 +453,32 @@ function softone_sync_customers() {
 		
 		foreach ($customers as $c=>$customer_id){
 			$customer = new WC_Customer( $customer_id );
+			$customer_order_count=$customer->get_order_count();
 			$customer_email=$customer->get_billing_email();
-			$response=$api->fetchCustomer(['email'=>'atraposbio@gmail.com']);
-			$found_customers[$customer_id]=$response['body'][0];
+			$customer_first_name=$customer->get_billing_first_name();
+			$response=$api->fetchCustomer(['email'=>$customer_email]);
+			if($response && isset($response['body']) && $response['counter']>0){
+				$found_customers[$customer_id]=$response['body'][0];
+				$found_customers[$customer_id]['status'] = 'update';
+				$found_customers['woo']=$customer;
+			}
+			else {
+				$found_customers['woo']=$customer;
+				$found_customers[$customer_id]=[
+												'cust_ID'=>$customer_id,
+												'cust_Code'=>'Orders:'.$customer_order_count,
+												'cust_descr'=>$customer_first_name,
+												'custAfm'=>'Need to',
+												'cust_phone'=>'be',
+												'cust_Email'=>$customer_email,
+												'company_branch'=>''];
+				$found_customers[$customer_id]['status'] = 'insert';
+				
+				//$found_customers['woo']=$customer;
+			}
 		}
-		
-		return ['success' => true, 'message' => 'No products to be synchronized.', 'customers' => $found_customers];
+	
+		return ['success' => true, 'message' => 'No customers to be synchronized.', 'customers' => $found_customers];
 
     }
 }

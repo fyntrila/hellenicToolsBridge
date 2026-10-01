@@ -9,8 +9,10 @@ Product Update/Insert
 
 TODO
 ---Customer sync
-test if users with roll customer exist in softone
-if user with roll customer does not exist in softone 
+test if users with role customer exist in softone  (OK)
+check customers with orders (OK)
+if user with roll customer does not exist in softone (OK)
+	and customer has made orders(OK)
 	test to push users with roll customer in softone
 else
 	test to update users with roll customer in softone
@@ -19,7 +21,9 @@ test to add an order on order checkout (or with sync button)
  check if customer exists in softone
  
  if customer does not exist in softone 
-   test to add customer
+	
+		test to add customer
+
 add order in softone
 
 test order update on change 
