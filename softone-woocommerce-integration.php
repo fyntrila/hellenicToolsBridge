@@ -31,6 +31,7 @@ require_once SOFTONE_PLUGIN_PATH . 'includes/logging.php';
 require_once SOFTONE_PLUGIN_PATH . 'admin/settings-page.php';
 require_once SOFTONE_PLUGIN_PATH . 'admin/customer-sync-page.php';
 require_once SOFTONE_PLUGIN_PATH . 'admin/product-sync-page.php';
+require_once SOFTONE_PLUGIN_PATH . 'admin/product-test-page.php';
 require_once SOFTONE_PLUGIN_PATH . 'admin/woo2soft1_sync_products_page.php';
 require_once SOFTONE_PLUGIN_PATH . 'admin/order-sync-page.php';
 require_once SOFTONE_PLUGIN_PATH . 'admin/logs-page.php';
@@ -112,11 +113,20 @@ function softone_clear_scheduled_cron_jobs() {
 register_deactivation_hook(__FILE__, 'softone_clear_scheduled_cron_jobs');
 
 // Admin menu setup
+/*add_submenu_page( string $parent_slug, 
+					string $page_title, 
+					string $menu_title, 
+					string $capability, 
+					string $menu_slug, 
+					callable $callback = '', 
+					int|float $position = null ): string|false
+*/
 function softone_admin_menu() {
     add_menu_page('Softone Integration', 'Softone', 'manage_options', 'softone-settings', 'softone_settings_page');
 	add_submenu_page('softone-settings', 'Customer Sync', 'Customers', 'manage_options', 'softone-customers', 'softone_customers_page');
 	add_submenu_page('softone-settings', 'Product Sync', 'Products', 'manage_options', 'softone-products','softone_products_page');
 	add_submenu_page('softone-settings', 'Order Sync', 'Orders', 'manage_options', 'softone-orders', 'softone_orders_page');
+	add_submenu_page('softone-settings', 'Product Test', 'ProductCheck', 'manage_options', 'softone-product-check', 'softone_product_test_page');
    //add_submenu_page('softone-settings', 'Product Sync', 'Products', 'manage_options', 'softone2woo-sync-products','softone_sync_products_page');
 	add_submenu_page('softone-settings', 'Live Logging', 'Logs', 'manage_options', 'softone-logs', 'softone_logs_page');
 }
@@ -481,5 +491,26 @@ function softone_sync_customers() {
 		return ['success' => true, 'message' => 'No customers to be synchronized.', 'customers' => $found_customers];
 
     }
+}
+
+function test_sku_item_code() {
+	if (class_exists('WooCommerce')) {
+		$api = new Softone_API();
+		$products = wc_get_products( array(
+		'limit'    => 30,
+		'order'    => 'DESC',
+		'orderby'  => 'meta_value',
+		'meta_key' => '_sku',
+		) );
+		$found=array();
+		foreach ( $products as $product ) {
+			//printf( '%s (%s)<br>', $product->get_name(), $product->get_sku() );
+			$sku=$product->get_sku();
+			$response=$api->findSoft1Product($sku);
+			$found[$sku]=$response;
+		}
+		// $found['products']=$products;
+		return ['success' => true, 'message' => 'Skus found list.', 'skus' => $found];
+	}
 }
 

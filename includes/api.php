@@ -134,7 +134,7 @@ class Softone_API {
 			// ]);
 		// }
 		// else{
-			$response = wp_remote_post($this->endpoint.$data['service'], [
+			$response = wp_remote_post($this->endpoint.$service, [
 				'body' => json_encode($data),
 				'headers' => ['Content-Type' => 'application/json','Content-Encoding' => 'gzip','charset' => 'gzip']
 			]);
@@ -376,7 +376,7 @@ class Softone_API {
 			}
 			]
 		*/
-		$response = $this->request('/js/HellenicTool.WServices/fetchCustomer', [
+		$response = $this->request('js/HellenicTool.WServices/fetchCustomer', [
 			'clientID' => $this->session,
 			'email' =>$data['email'],
 			'limit' =>1
@@ -415,7 +415,7 @@ class Softone_API {
 	}
 	
 	public function getLastUpdatedItems($fromDate){
-		$response = $this->request('/js/HellenicTool.WServices/getLastUpdatedItems', [
+		$response = $this->request('js/HellenicTool.WServices/getLastUpdatedItems', [
 			'clientID' => $this->session,
 			'appID' => '1000',
 			'updateItemDate'=> $fromDate,
@@ -529,7 +529,33 @@ class Softone_API {
 			return '';
 		}
 	}
-	
+		public function findSoft1Product($sku) {
+		// $sku='';
+		// $sku=$product->get_sku();
+		
+		//CHECK IF ITEM EXIST
+		$response = $this->request('getBrowserInfo', [
+			'clientID' => $this->session,
+			'appID' => '1000',
+			'object' => 'ITEM',
+			'list'=>'',
+			'version'=>1,
+			'limit'=> 1,
+			'filters'=>'ITEM.CODE=' . $sku,
+		]);
+		
+		$soft1ItemKey=$response;
+	    return $soft1ItemKey;
+		if(isset($response['rows'][0]) && $response['rows'][0]){
+			$soft1ItemKey=$response['rows'][0];
+			// softone_log('Item found: ',$product->get_sku().' with Soft1 Key: ' . $soft1ItemKey.' will be updated!');
+			return $soft1ItemKey;
+		}
+		else {
+			// softone_log('Item not found: ',$product->get_sku().' will be inserted in Soft1!');
+			return 'not found';
+		}
+	}
 	public function findOrderKey($order_id) {
 		
 		//CHECK IF Order EXIST
