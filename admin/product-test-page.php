@@ -13,7 +13,7 @@ function softone_product_test_page() {
     }
     ?>
     <div class="wrap">
-        <h1>test_sku_item_code</h1>
+        <h1>test is woocommerce sku exist as item code in soft1</h1>
         <form method="post">
             <input type="hidden" name="test_sku_item_code" value="1" />
             <?php submit_button('Test skus'); ?>

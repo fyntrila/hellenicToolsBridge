@@ -193,7 +193,10 @@ function softone_create_order($order_id) {
 		$api = new Softone_API();
 		$customer_phone = $order->get_billing_phone();
 		$customer_email = $order->get_billing_email();
-		$soft1CustomerCode = $api->fetchCustomer(['email'=>$customer_email]);		
+		$soft1CustomerCode = $api->fetchCustomer([
+													'email'=>$customer_email,
+													'limit'=>1
+												]);		
 		// $soft1CustomerCode = $api->findCustomerPhone($customer_phone);		
 		
         if($soft1CustomerCode){
@@ -469,11 +472,11 @@ function softone_sync_customers() {
 			$response=$api->fetchCustomer(['email'=>$customer_email]);
 			if($response && isset($response['body']) && $response['counter']>0){
 				$found_customers[$customer_id]=$response['body'][0];
-				$found_customers[$customer_id]['status'] = 'update';
-				$found_customers['woo']=$customer;
+				// $found_customers[$customer_id]['status'] = 'update';
+				// $found_customers['woo']=$customer;
 			}
 			else {
-				$found_customers['woo']=$customer;
+				// $found_customers['woo']=$customer;
 				$found_customers[$customer_id]=[
 												'cust_ID'=>$customer_id,
 												'cust_Code'=>'Orders:'.$customer_order_count,
@@ -482,7 +485,7 @@ function softone_sync_customers() {
 												'cust_phone'=>'be',
 												'cust_Email'=>$customer_email,
 												'company_branch'=>''];
-				$found_customers[$customer_id]['status'] = 'insert';
+				// $found_customers[$customer_id]['status'] = 'insert';
 				
 				//$found_customers['woo']=$customer;
 			}
@@ -497,7 +500,7 @@ function test_sku_item_code() {
 	if (class_exists('WooCommerce')) {
 		$api = new Softone_API();
 		$products = wc_get_products( array(
-		'limit'    => 30,
+		'limit'    => 10,
 		'order'    => 'DESC',
 		'orderby'  => 'meta_value',
 		'meta_key' => '_sku',

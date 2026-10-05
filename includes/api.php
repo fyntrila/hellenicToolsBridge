@@ -4,7 +4,7 @@
  */
 class Softone_API {
 
-    private $endpoint = 'https://hellenictooloe.oncloud.gr/s1services';
+    private $endpoint = 'https://hellenictooloe.oncloud.gr/s1services/';
     private $username;
     private $password;
     private $client_id;
@@ -134,7 +134,7 @@ class Softone_API {
 			// ]);
 		// }
 		// else{
-			$response = wp_remote_post($this->endpoint.$service, [
+			$response = wp_remote_post($this->endpoint.$data['service'], [
 				'body' => json_encode($data),
 				'headers' => ['Content-Type' => 'application/json','Content-Encoding' => 'gzip','charset' => 'gzip']
 			]);
@@ -199,6 +199,42 @@ class Softone_API {
     }
 
     /**
+	createSale: Web Service δημιουργίας παραγγελίας
+				URL: https://hellenictooloe.oncloud.gr/s1services/js/HellenicTool.WServices/createSale
+				Request
+				{
+				"clientID": "9J…11",
+				"customerID": "127096",
+				"sales_series": 7001,
+				CONQUEST 11
+				"paymentID": 1000,
+				"shipmentID": 1,
+				"shipkindID": 1000,
+				"customer_remarks": "",
+				"shipping_address": "Σύνταγμα",
+				"shipping_zip": "11111",
+				"shipping_district": "Αθήνα",
+				"shipping_city": "Αθήνα",
+				"web_id": 660,
+				"item_lines": [
+				{
+				"SKU": "12",
+				"mtrl": "95062",
+				"quantity": 1,
+				"price": "10.00",
+				"discount1": 0
+				}
+				],
+				"expn": [{
+				"expn_ID": 104,
+				"expn_net_val": 5
+				}]
+				}
+				Response
+				{
+				"success": true,
+				"ID": 86428
+				}
      * Creates an order in the Softone API.
      *
      * @param WC_Order $order The WooCommerce order.
@@ -209,14 +245,26 @@ class Softone_API {
 		$fees = [];
 			
 		$order_id = $order->get_id();
+		$customer_id=$soft1CustomerCode['cust_ID'];
 		$soft1OrderKey=$this->findOrderKey($order_id);
+		/*
+			'item_lines'=> [
+								[
+									'SKU'=> '12',
+									'mtrl'=> '95062',
+									'quantity'=> 1,
+									'price'=> '10.00',
+									'discount1'=> 0
+								]
+							],
+		*/
 		foreach ($order->get_items() as $item_id => $item) {
 			$product = $item->get_product();
 			$items[] = [
-				'MTRL_ITEM_CODE' => $product->get_sku(),
-				'QTY1' => $item->get_quantity(),
-				'PRICE' => $product->get_price(),
-				'VAT' => '1000'
+				'SKU'=> => $product->get_sku(),
+				'quantity' => $item->get_quantity(),
+				'price' => $product->get_price(),
+				'discount1' => 0
 			];
 		}
 
@@ -248,18 +296,16 @@ class Softone_API {
 			// softone_log('order_payment_method_fees', $order->get_total_fees());
 			$paymentMethodFees = ($paymentMethodFees/1.24);
 			$fees[]=[
-					'EXPN' => 105,
-					'EXPVAL' => $paymentMethodFees
+					'expn_id' => 104,
+					'expn_net_val' => 5
 				];
 		}
 		
 		//get district only Greek
-		$district=$this->getDistrictName($order->get_billing_state());
+		$district=$this->getDistrictName($order->get_shipping_state());
 		
 		$order_data = [
-			'SALDOC' => [
-				[
-					'SERIES' => '7023', // This should be defined based on your Softone settings
+			'SERIES' => '7023', // This should be defined based on your Softone settings
 					'TRDR_CUSTOMER_CODE' => $soft1CustomerCode, // Map this appropriately
 					'TRNDATE' => date("Y-m-d H:i:s"), //'2025-04-14 08:50:19',//sgmdate('Y-m-d H:i:s', strtotime($order->get_date_created())),
 					'PAYMENT' => '1000',
@@ -281,13 +327,44 @@ class Softone_API {
 			
 			'ITELINES' => $items
 		];
-		
-		$response = $this->request('setData', [
+		$shipping_address = $order->get_shipping_address_1();
+		$shipping_postcode = $order->get_shipping_postcode();
+		$shipping_city = $order->get_shipping_city();
+		$response = $this->request('createSale', [
 			'clientID' => $this->session,
 			'appID' => '1000',
-			'object' => 'SALDOC',
-			'key' => ($soft1OrderKey)?$soft1OrderKey:'',
-			'data' => $order_data
+			'customerID'=> $customer_id,
+			'sales_series'=> 7001,
+			'paymentID'=> 1001,
+			'shipmentID'=> 1,
+			'shipkindID'=> 1000,
+			'customer_remarks'=> $order_remarks,
+			'shipping_address'=> $shipping_address,
+			'shipping_zip'=> $shipping_postcode,
+			'shipping_district'=> $district,
+			'shipping_city'=> $shipping_city,
+			'web_id'=> $order_id,
+			'item_lines'=> [
+								[
+									'SKU'=> '12',
+									'mtrl'=> '95062',
+									'quantity'=> 1,
+									'price'=> '10.00',
+									'discount1'=> 0
+								]
+							],
+			'expn'=> [
+						[
+						'expn_ID'=> 104,
+						'expn_net_val'=> 5
+						]
+					 ]
+			
+			
+			
+			
+			
+		
 		]);
 
 		if ($response) {
@@ -502,6 +579,57 @@ class Softone_API {
 	}
 	
 	
+	public function CreateCustomer($data){
+		/*
+			URL: https://hellenictooloe.oncloud.gr/s1services/js/HellenicTool.WServices/createCustomer
+			Πελάτης Εσωτερικού
+			Request
+			{
+			"clientID": "9J….11",
+			"customer_name": "Test Customer WS",
+			"customer_code": "*",
+			"customer_category": 3099,
+			"customer_address": "Athens",
+			"customer_zip": "10000",
+			"customer_city": "Athens",
+			"customer_district": "district test",
+			"customer_phone": "customer_phone",
+			"customer_email": "test@test.gr",
+			"customer_irsdata": "1101",
+			"customer_webID": "101",
+			"AFM": "777777777",
+			"customer_occupation": "online shop",
+			"customer_country": 1000
+			}
+			Response
+			{
+			"customer_ID": 129779,
+			"success": true
+			}
+		*/
+		$response = $this->request('createCustomer', [
+            'clientID' => $this->session,
+            'appID' => '1000',
+            'object' => 'CUSTOMER',
+            'customer_name'=> $data['customer_name'],
+			'customer_code'=> '*',
+			'customer_category'=> 3000,//esoterikou me kanoniko fpa $data['customer_category']
+			'customer_address'=> $data['customer_address'],
+			'customer_zip'=> $data['customer_zip'],
+			'customer_city'=> $data['customer_city'],
+			'customer_district'=> $data['customer_district'],
+			'customer_phone'=> $data['customer_phone'],
+			'customer_email'=> $data['customer_email'],
+			'customer_irsdata'=> $data['customer_irsdata'],
+			'customer_webID'=> $data['customer_webID'],
+			'AFM'=> $data['AFM'],
+			'customer_occupation'=> $data['customer_occupation'],
+			'customer_country'=> $data['customer_country']
+        ]);
+	
+	}
+	
+	
 	public function findProductKey($product) {
 		$sku='';
 		$sku=$product->get_sku();
@@ -541,13 +669,13 @@ class Softone_API {
 			'list'=>'',
 			'version'=>1,
 			'limit'=> 1,
-			'filters'=>'ITEM.CODE=' . $sku,
+			'filters'=>'ITEM.CODE=*' . $sku,
 		]);
 		
-		$soft1ItemKey=$response;
-	    return $soft1ItemKey;
-		if(isset($response['rows'][0]) && $response['rows'][0]){
-			$soft1ItemKey=$response['rows'][0];
+		// $soft1ItemKey=$response;
+	    // return $soft1ItemKey;
+		if(isset($response['body']['rows'][0]) && $response['body']['rows'][0]){
+			$soft1ItemKey=$response['body']['rows'];
 			// softone_log('Item found: ',$product->get_sku().' with Soft1 Key: ' . $soft1ItemKey.' will be updated!');
 			return $soft1ItemKey;
 		}
