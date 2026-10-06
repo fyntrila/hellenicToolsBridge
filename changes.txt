@@ -13,21 +13,28 @@ test if users with role customer exist in softone  (OK)
 check customers with orders (OK)
 if user with roll customer does not exist in softone (OK)
 	and customer has made orders(OK)
-	test to push users with roll customer in softone
-else
-	test to update users with roll customer in softone
+	
 ---Order sync
 test to add an order on order checkout (or with sync button) 
- check if customer exists in softone
+ check if customer exists in softone (****keep the customer id you will need it to add the order)
  
- if customer does not exist in softone 
-	
-		test to add customer
+		else 		test to add customer (****keep the customer id you will need it to add the order)
+prepare the order for softone
+add the order in softone (****save the order id of softone in custom field in woocommerce example code bellow)
+/***************Example code of custom field for orders
 
-add order in softone
+$order_id = 123; // Replace with your target order ID
+$order = wc_get_order( $order_id );
 
-test order update on change 
-  push changes to softone
+if ( $order ) {
+    $order->update_meta_data( '_soft1orderID', 'returned value from softone after order create' );
+    $order->save();
+}
+
+
+**************************************/
+test order update on change (*****you will need the order id of softone and fill all the fields or they will be emptyed in softone)
+ updated order changes to softone
 
 
 

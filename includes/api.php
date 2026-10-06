@@ -261,7 +261,7 @@ class Softone_API {
 		foreach ($order->get_items() as $item_id => $item) {
 			$product = $item->get_product();
 			$items[] = [
-				'SKU'=> => $product->get_sku(),
+				'SKU'=>  $product->get_sku(),
 				'quantity' => $item->get_quantity(),
 				'price' => $product->get_price(),
 				'discount1' => 0
@@ -313,8 +313,7 @@ class Softone_API {
 					'COMMENTS' => $order_comments, // Add payment method to the comments
 					'REMARKS' => $order_remarks, // Client order remarks
 					'NUM01' => $order_id
-				]
-			],
+				,
 			'EXPANAL' => $fees,
 			'MTRDOC' => [
 			   [
@@ -579,7 +578,7 @@ class Softone_API {
 	}
 	
 	
-	public function CreateCustomer($data){
+	public function CreateTheCustomer($data){
 		/*
 			URL: https://hellenictooloe.oncloud.gr/s1services/js/HellenicTool.WServices/createCustomer
 			Πελάτης Εσωτερικού
