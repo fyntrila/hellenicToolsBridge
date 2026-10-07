@@ -58,7 +58,29 @@ function softone_orders_page() {
                         <td><?php echo esc_html($order->get_status()); ?></td>
                         <td><?php echo esc_html($order->get_total()); ?></td>
                     </tr>
+						<?php 
+							foreach ( $order->get_items() as $item_id => $item ):
+							?>
+								<tr>
+									<td>pId:<?php echo esc_html($item->get_product_id());?></td>
+									<td>pName:<?php echo esc_html($item->get_name());?></td>
+									<td>pPrice:<?php echo esc_html($item->get_product()->get_price());?></td>
+									<td>pType:<?php echo esc_html($item->get_type());?></td>
+									<td>pSKU:<?php echo esc_html($item->get_product()->get_sku());?></td>
+									<td>pWeight:<?php echo esc_html($item->get_product()->get_weight());?></td>
+									<td>pTotal:<?php echo esc_html($item->get_total());?></td>
+									<td>pType:<?php echo esc_html($item->get_type());?></td>
+									<td>pId:<?php echo esc_html($item->get_product_id());?></td>
+									<td>pName:<?php echo esc_html($item->get_name());?></td>
+									<td>pTotal:<?php echo esc_html($item->get_total());?></td>
+									<td>pType:<?php echo esc_html($item->get_type());?></td>
+									
+								</tr>
+							<?php
+							endforeach;
+						?>
                     <?php endforeach; ?>
+					
                 </tbody>
             </table>
             <?php
