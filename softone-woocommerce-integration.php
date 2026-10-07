@@ -444,12 +444,24 @@ function softone_sync_orders() {
     if (class_exists('WooCommerce')) {
         $api = new Softone_API();
 		//date time update, not all orders
-        $orders = wc_get_orders(['limit' => -1]);
-        foreach ($orders as $order) {
-            $api->create_order($order);
-        }
+		// Get refunds in the last 24 hours.
+		$dateString1 = "2026-01-01T00:00:00Z";
+		$date = new DateTime($dateString1, new DateTimeZone('UTC'));
+		
+		$dateString2 = $date->format('Y-m-d\TH:i:s\Z'); 
+		$args = array(
+			// 'type'         => 'shop_order_refund',
+			'date_updated' => '>' . ( $dateString2 ),
+			// 'status' =>array( 'wc-processing', 'wc-on-hold','wc-pending' ),//'wc-failed','wc-refunded','wc-cancelled','wc-completed'
+			'limit' => -1,
+			//'return' => 'ids'
+		);
+        $orders = wc_get_orders($args);
+        // foreach ($orders as $order) {
+            // $api->create_order($order);
+        // }
         softone_log('sync_orders', 'Orders synchronized successfully.');
-        return 'Orders synchronized successfully.';
+        return ['success'=>true,'message'=>'Orders synchronized successfully.','orders'=>$orders];
     }
 }
 function softone_sync_customers() {

@@ -5,7 +5,7 @@
 function softone_orders_page() {
     if (isset($_POST['sync_orders']) && check_admin_referer('softone_sync_orders_action', 'softone_sync_orders_nonce')) {
         $result = softone_sync_orders();
-        echo '<div class="notice notice-success"><p>' . $result . '</p></div>';
+        echo '<div class="notice notice-success"><p>' . $result['message'] . '</p></div>';
     }
     ?>
     <div class="wrap">
@@ -17,7 +17,9 @@ function softone_orders_page() {
         </form>
         <?php
         // Assuming softone_get_orders() function retrieves orders from Softone
-       // $orders = softone_get_orders();
+       $orders =$result['orders'];
+	   // echo "<pre>";
+	   // print_r($orders);
         if ($orders) {
             ?>
             <h2>Synchronized Orders</h2>
@@ -26,19 +28,35 @@ function softone_orders_page() {
                     <tr>
                         <th>Order ID</th>
                         <th>Customer</th>
+                        <th>Customer Name</th>
+                        <th>Customer Email</th>
+                        <th>Customer Address</th>						
+                        <th>Customer City</th>						
+                        <th>Customer State</th>						
+                        <th>Customer Country</th>						
+                        <th>Customer Postcode</th>						
                         <th>Date</th>
                         <th>Status</th>
                         <th>Total</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <?php foreach ($orders as $order): ?>
+                    <?php foreach ($orders as $order_id):
+								$order=wc_get_order( $order_id );
+								?>
                     <tr>
-                        <td><?php echo esc_html($order['id']); ?></td>
-                        <td><?php echo esc_html($order['customer']); ?></td>
-                        <td><?php echo esc_html($order['date']); ?></td>
-                        <td><?php echo esc_html($order['status']); ?></td>
-                        <td><?php echo esc_html($order['total']); ?></td>
+                        <td><?php echo esc_html($order->get_id()); ?></td>
+                        <td><?php echo esc_html($order->get_customer_id()); ?></td>
+                        <td><?php echo esc_html($order->get_shipping_first_name().'-'.$order->get_shipping_last_name()); ?></td>
+                        <td><?php echo esc_html($order->get_billing_email()); ?></td>
+                        <td><?php echo esc_html($order->get_shipping_address_1()); ?></td>
+                        <td><?php echo esc_html($order->get_shipping_city()); ?></td>
+                        <td><?php echo esc_html($order->get_shipping_state()); ?></td>
+                        <td><?php echo esc_html($order->get_shipping_country()); ?></td>
+                        <td><?php echo esc_html($order->get_shipping_postcode()); ?></td>
+                        <td><?php echo esc_html($order->get_date_created()); ?></td>
+                        <td><?php echo esc_html($order->get_status()); ?></td>
+                        <td><?php echo esc_html($order->get_total()); ?></td>
                     </tr>
                     <?php endforeach; ?>
                 </tbody>
