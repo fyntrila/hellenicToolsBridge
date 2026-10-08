@@ -240,12 +240,12 @@ class Softone_API {
      * @param WC_Order $order The WooCommerce order.
      * @return bool True on success, false on failure.
      */
-    public function create_order($order ,$soft1CustomerCode) {
+    public function create_order($order, $soft1Customer) {
         $items = [];
 		$fees = [];
 			
 		$order_id = $order->get_id();
-		$customer_id=$soft1CustomerCode['cust_ID'];
+		$customer_id=$soft1Customer['cust_ID'];
 		$soft1OrderKey=$this->findOrderKey($order_id);
 		/*
 			'item_lines'=> [
@@ -538,6 +538,9 @@ class Softone_API {
 		return $products;
 	}
 //	https://hellenictooloe.oncloud.gr/s1services/js/HellenicTool.WServices/getLastUpdatedItems
+	
+	
+	
 	public function createCustomer($order){
 		$woocommerce_customer_id="woocommerce_user_id:".$order->get_customer_id();
 		
@@ -578,15 +581,16 @@ class Softone_API {
 	}
 	
 	
-	public function CreateTheCustomer($data){
+	public function update_customer($data){
 		/*
-			URL: https://hellenictooloe.oncloud.gr/s1services/js/HellenicTool.WServices/createCustomer
+			URL: https://hellenictooloe.oncloud.gr/s1services/js/HellenicTool.WServices/updateCustomer
 			Πελάτης Εσωτερικού
 			Request
 			{
 			"clientID": "9J….11",
+			"customer_ID": "Test Customer WS",
 			"customer_name": "Test Customer WS",
-			"customer_code": "*",
+			"customer_code": "Test Customer code",
 			"customer_category": 3099,
 			"customer_address": "Athens",
 			"customer_zip": "10000",
@@ -606,26 +610,59 @@ class Softone_API {
 			"success": true
 			}
 		*/
-		$response = $this->request('createCustomer', [
-            'clientID' => $this->session,
-            'appID' => '1000',
-            'object' => 'CUSTOMER',
-            'customer_name'=> $data['customer_name'],
-			'customer_code'=> '*',
-			'customer_category'=> 3000,//esoterikou me kanoniko fpa $data['customer_category']
-			'customer_address'=> $data['customer_address'],
-			'customer_zip'=> $data['customer_zip'],
-			'customer_city'=> $data['customer_city'],
-			'customer_district'=> $data['customer_district'],
-			'customer_phone'=> $data['customer_phone'],
-			'customer_email'=> $data['customer_email'],
-			'customer_irsdata'=> $data['customer_irsdata'],
-			'customer_webID'=> $data['customer_webID'],
-			'AFM'=> $data['AFM'],
-			'customer_occupation'=> $data['customer_occupation'],
-			'customer_country'=> $data['customer_country']
-        ]);
-	
+		
+		$data['clientID'] = $this->session;
+        $data['appID'] = '1000';
+		$response = $this->request('updateCustomer', $data);
+		if(isset($response['customer_ID']) && $response['customer_ID']){
+			// softone_log('New customer created, soft1 ID: ',$response['customer_ID']);
+			return($response);
+		}
+		else {
+			return($response);
+		}
+	}
+	public function create_customer($data){
+		/*
+			URL: https://hellenictooloe.oncloud.gr/s1services/js/HellenicTool.WServices/createCustomer
+			Πελάτης Εσωτερικού
+			Request
+			{
+			"clientID": "9J….11",
+			"customer_ID": "Test Customer WS",
+			"customer_name": "Test Customer WS",
+			"customer_code": "*", //star create new code
+			"customer_category": 3099,
+			"customer_address": "Athens",
+			"customer_zip": "10000",
+			"customer_city": "Athens",
+			"customer_district": "district test",
+			"customer_phone": "customer_phone",
+			"customer_email": "test@test.gr",
+			"customer_irsdata": "1101",
+			"customer_webID": "101",
+			"AFM": "777777777",
+			"customer_occupation": "online shop",
+			"customer_country": 1000
+			}
+			Response
+			{
+			"customer_ID": 129779,
+			"success": true
+			}
+		*/
+		
+		$data['clientID'] = $this->session;
+        $data['appID'] = '1000';
+		$response = $this->request('createCustomer', $data);
+		if(isset($response['customer_ID']) && $response['customer_ID']){
+			// softone_log('New customer created, soft1 ID: ',$response['customer_ID']);
+			return($response);
+		}
+		else {
+			return($response);
+			//'success'=>false,'customer_ID'=>$response['customer_ID']);
+		}
 	}
 	
 	

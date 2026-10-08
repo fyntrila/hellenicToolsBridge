@@ -191,27 +191,94 @@ function softone_create_order($order_id) {
 	
     if ($order) {
 		$api = new Softone_API();
-		$customer_phone = $order->get_billing_phone();
-		$customer_email = $order->get_billing_email();
-		$soft1CustomerCode = $api->fetchCustomer([
-													'email'=>$customer_email,
-													'limit'=>1
-												]);		
-		// $soft1CustomerCode = $api->findCustomerPhone($customer_phone);		
+		$orders_customer_phone = $order->get_billing_phone();
+		$orders_customer_email = $order->get_billing_email();
+		//Fetch customer from soft1 using the order email.
+		$soft1Customer = $api->fetchCustomer([
+												'email'=>$orders_customer_email,
+												'limit'=>1
+											]);		
+		// $soft1Customer = $api->findCustomerPhone($customer_phone);		
+		// $custID=$soft1Customer['cust_ID'];
+		//Prepare the customer data for upsertProduct
 		
-        if($soft1CustomerCode){
-			$api->create_order($order, $soft1CustomerCode);
+		$orders_customer_name=$order->get_billing_first_name().' '.$order->get_billing_last_name();
+		$orders_customer_address=$order->get_billing_address_1();
+		$orders_customer_postcode=$order->get_billing_postcode();
+		$orders_customer_city=$order->get_billing_city();
+		$orders_customer_state=$order->get_billing_state();
+		$orders_customer_country=$order->get_billing_country();
+		$orders_customer_district=$api->getDistrictName($orders_customer_state);
+		
+		
+		
+		
+		
+		//If customer exist in soft1 the continue to create order
+		//we will update customer data just in case something chaged
+		//email stays the same
+		//We then continue to create the sale in soft1
+		
+		
+        if($soft1Customer){
+			$orders_customer_id=$soft1Customer['cust_ID'];
+			$orders_customer_code=$soft1Customer['cust_Code'];
+			$data = [
+					'customer_ID' =>  $orders_customer_id,
+					'customer_name' =>  $orders_customer_name,
+					'customer_code' =>  $orders_customer_code,
+					'customer_category' =>  3099,//Πελατες λιανικης
+					'customer_address' =>  $orders_customer_address,
+					'customer_zip' =>  $orders_customer_postcode,
+					'customer_city' =>  $orders_customer_city,
+					'customer_district' =>$orders_customer_district ,
+					'customer_phone' =>  $orders_customer_phone,
+					'customer_email' =>  $orders_customer_email,
+					'customer_irsdata' =>  '',
+					'customer_webID' =>  '',
+					'AFM' =>  '',
+					'customer_occupation' =>  '',
+					'customer_country' =>  $orders_customer_country
+				];
+			$res = $api->update_customer($data);
+			if(isset($res['success']) && $res['success']){
+				$soft1Customer=$api->findCustomerPhone($customer_phone);
+				softone_log('Update data of customer with soft1 ID:', $orders_customer_id);
+				$res = $api->create_order($order, $orders_customer_id);
+				return $res;
+			}
+			else {
+				softone_log('Failed to update data of customer with soft1 ID:', $orders_customer_id);
+				return false;
+			}
+			
 		}
 		else{
-			$res=$api->createCustomer($order);
+			$data = [
+					'customer_name' =>  $orders_customer_name,
+					'customer_code' =>  '*',
+					'customer_category' =>  3099,//Πελατες λιανικης
+					'customer_address' =>  $orders_customer_address,
+					'customer_zip' =>  $orders_customer_postcode,
+					'customer_city' =>  $orders_customer_city,
+					'customer_district' =>$orders_customer_district ,
+					'customer_phone' =>  $orders_customer_phone,
+					'customer_email' =>  $orders_customer_email,
+					'customer_irsdata' =>  '',
+					'customer_webID' =>  '',
+					'AFM' =>  '',
+					'customer_occupation' =>  '',
+					'customer_country' =>  $orders_customer_country
+				];
+			$res=$api->create_customer($data);
 			
 			if(isset($res['success']) && $res['success']){
-				$soft1CustomerCode=$api->findCustomerPhone($customer_phone);
-				softone_log('New customer added with code', $soft1CustomerCode);
-				$api->create_order($order, $soft1CustomerCode);
+				$soft1Customer=$api->findCustomerPhone($customer_phone);
+				softone_log('New customer added with code', $soft1Customer);
+				$api->create_order($order, $soft1Customer);
 			}
 			else{
-				$soft1CustomerCode=false;
+				$soft1Customer=false;
 				softone_log('customer_code', 'failed to create customer code');
 				return false;
 			}
@@ -439,7 +506,10 @@ function softone_sync_products() {
         }
     }
 }
+/*
+Create new orders in soft1
 
+*/
 function softone_sync_orders() {
     if (class_exists('WooCommerce')) {
         $api = new Softone_API();
@@ -450,10 +520,11 @@ function softone_sync_orders() {
 		
 		$dateString2 = $date->format('Y-m-d\TH:i:s\Z'); 
 		$args = array(
-			// 'type'         => 'shop_order_refund',
 			'date_updated' => '>' . ( $dateString2 ),
-			// 'status' =>array( 'wc-processing', 'wc-on-hold','wc-pending' ),//'wc-failed','wc-refunded','wc-cancelled','wc-completed'
 			'limit' => -1,
+			// 'type'         => 'shop_order_refund',
+			// 'status' =>array( 'wc-processing', 'wc-on-hold','wc-pending' ), 
+			//'wc-failed','wc-refunded','wc-cancelled','wc-completed'
 			//'return' => 'ids'
 		);
         $orders = wc_get_orders($args);
@@ -464,6 +535,12 @@ function softone_sync_orders() {
         return ['success'=>true,'message'=>'Orders synchronized successfully.','orders'=>$orders];
     }
 }
+
+
+
+
+
+
 function softone_sync_customers() {
     if (class_exists('WooCommerce')) {
         $api = new Softone_API();
