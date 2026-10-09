@@ -459,11 +459,11 @@ class Softone_API {
 		]);
 		return $response;
 	}
-	public function lastUpdateDate (){
+	public function lastUpdateDate ($object){
 		$date = new DateTime('now', new DateTimeZone('UTC'));
 		$dateString1 = "2026-01-01T00:00:00Z";
 		$dateString2 = $date->format('Y-m-d\TH:i:s\Z'); // Παράδειγμα δεύτερης ημερομηνίας
-		$file = '../wp-content/plugins/hellenicToolsBridge/products_sync_log.txt';
+		$file = '../wp-content/plugins/hellenicToolsBridge/'.$object.'_sync_log.txt';
 
 		// 1. Έλεγχος και ανάγνωση της τελευταίας ημερομηνίας εκτέλεσης
 		if (file_exists($file) && filesize($file) > 0) {
@@ -487,7 +487,7 @@ class Softone_API {
 		}
 		
 		file_put_contents($file, $dateString2 . PHP_EOL, FILE_APPEND | LOCK_EX);
-		return $lastLine;
+		return $dateString1;
 	}
 	
 	public function getLastUpdatedItems($fromDate){

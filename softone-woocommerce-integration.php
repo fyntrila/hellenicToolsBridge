@@ -381,7 +381,7 @@ function softone_sync_products() {
     if (class_exists('WooCommerce')) {
         $api = new Softone_API();
         // $products = $api->get_products();
-		$fromDate=$api->lastUpdateDate();
+		$fromDate=$api->lastUpdateDate('product');
 		echo "Last update:".$fromDate;
         $products = $api->getLastUpdatedItems($fromDate);
 		// echo "<pre>";
@@ -507,32 +507,50 @@ function softone_sync_products() {
     }
 }
 /*
-Create new orders in soft1
+Sync the orders from last sync date
+we check only date_updated, since it is populated with creation time on creation
+and update time on every update
+
 
 */
 function softone_sync_orders() {
+	 $api = new Softone_API();
     if (class_exists('WooCommerce')) {
-        $api = new Softone_API();
+		$fromDate=$api->lastUpdateDate('orders');
+		// echo "Last update:".$fromDate;
+        
 		//date time update, not all orders
 		// Get refunds in the last 24 hours.
-		$dateString1 = "2026-01-01T00:00:00Z";
-		$date = new DateTime($dateString1, new DateTimeZone('UTC'));
+		// $dateString1 = "2026-01-01T00:00:00Z";
+		// $dateString3 = "2026-10-07T00:00:00Z";
+		// $date = new DateTime($dateString3, new DateTimeZone('UTC'));
 		
-		$dateString2 = $date->format('Y-m-d\TH:i:s\Z'); 
-		$args = array(
-			'date_updated' => '>' . ( $dateString2 ),
+		// $dateString2 = $date->format('Y-m-d\TH:i:s\Z'); 
+		// $argsCreated = array(
+		
+			// 'date_created' => '>' . ( $dateString1 ),
+			// 'limit' => -1,
+			// // 'type'         => 'shop_order_refund',
+			// // 'status' =>array( 'wc-processing', 'wc-on-hold','wc-pending' ), 
+			// //'wc-failed','wc-refunded','wc-cancelled','wc-completed'
+			// //'return' => 'ids'
+		// );
+        $argsUpdated = array(
+		
+			'date_updated' => '>' . ( $fromDate ),
 			'limit' => -1,
 			// 'type'         => 'shop_order_refund',
 			// 'status' =>array( 'wc-processing', 'wc-on-hold','wc-pending' ), 
 			//'wc-failed','wc-refunded','wc-cancelled','wc-completed'
 			//'return' => 'ids'
 		);
-        $orders = wc_get_orders($args);
+        // $ordersCreated = wc_get_orders($argsCreated);
+        $orders = wc_get_orders($argsUpdated);
         // foreach ($orders as $order) {
             // $api->create_order($order);
         // }
         softone_log('sync_orders', 'Orders synchronized successfully.');
-        return ['success'=>true,'message'=>'Orders synchronized successfully.','orders'=>$orders];
+        return ['success'=>true,'message'=>'Orders synchronized successfully.','orders'=>$orders,'lastUpdateDate'=>$fromDate];
     }
 }
 

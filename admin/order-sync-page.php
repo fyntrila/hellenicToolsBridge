@@ -5,7 +5,7 @@
 function softone_orders_page() {
     if (isset($_POST['sync_orders']) && check_admin_referer('softone_sync_orders_action', 'softone_sync_orders_nonce')) {
         $result = softone_sync_orders();
-        echo '<div class="notice notice-success"><p>' . $result['message'] . '</p></div>';
+        echo '<div class="notice notice-success"><p>' . $result['message'] .' at '. $result['lastUpdateDate'].'</p></div>';
     }
     ?>
     <div class="wrap">
@@ -35,7 +35,8 @@ function softone_orders_page() {
                         <th>Customer State</th>						
                         <th>Customer Country</th>						
                         <th>Customer Postcode</th>						
-                        <th>Date</th>
+                        <th>Date Created</th>
+                        <th>Date Updated</th>
                         <th>Status</th>
                         <th>Total</th>
                     </tr>
@@ -55,6 +56,7 @@ function softone_orders_page() {
                         <td><?php echo esc_html($order->get_shipping_country()); ?></td>
                         <td><?php echo esc_html($order->get_shipping_postcode()); ?></td>
                         <td><?php echo esc_html($order->get_date_created()); ?></td>
+                        <td><?php echo esc_html($order->get_date_modified()); ?></td>
                         <td><?php echo esc_html($order->get_status()); ?></td>
                         <td><?php echo esc_html($order->get_total()); ?></td>
                     </tr>
