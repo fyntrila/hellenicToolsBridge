@@ -537,7 +537,9 @@ function softone_sync_orders() {
 		// );
         $argsUpdated = array(
 		
-			'date_updated' => '>' . ( $fromDate ),
+			'date_updated' => '> 2026-10-11T16:59:35+00:00',
+			// 'date_modified' => '>2026-10-10T16:59:35+00:00' ,
+			//. ( $fromDate ),
 			'limit' => -1,
 			// 'type'         => 'shop_order_refund',
 			// 'status' =>array( 'wc-processing', 'wc-on-hold','wc-pending' ), 
@@ -550,7 +552,7 @@ function softone_sync_orders() {
             // $api->create_order($order);
         // }
         softone_log('sync_orders', 'Orders synchronized successfully.');
-        return ['success'=>true,'message'=>'Orders synchronized successfully.','orders'=>$orders,'lastUpdateDate'=>$fromDate];
+        return ['success'=>true,'message'=>'Orders synchronized successfully.','orders'=>$orders,'lastUpdateDate'=>$fromDate,'args'=>$argsUpdated];
     }
 }
 

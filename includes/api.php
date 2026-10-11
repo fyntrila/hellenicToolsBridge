@@ -461,33 +461,36 @@ class Softone_API {
 	}
 	public function lastUpdateDate ($object){
 		$date = new DateTime('now', new DateTimeZone('UTC'));
-		$dateString1 = "2026-01-01T00:00:00Z";
-		$dateString2 = $date->format('Y-m-d\TH:i:s\Z'); // Παράδειγμα δεύτερης ημερομηνίας
+		$dateNow = $date->format('Y-m-d\TH:i:s\Z');
+			
 		$file = '../wp-content/plugins/hellenicToolsBridge/'.$object.'_sync_log.txt';
 
 		// 1. Έλεγχος και ανάγνωση της τελευταίας ημερομηνίας εκτέλεσης
 		if (file_exists($file) && filesize($file) > 0) {
+			
 			// Διαβάζουμε όλο το αρχείο σε έναν πίνακα, όπου κάθε στοιχείο είναι μια γραμμή
 			$lines = file($file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
 		
 			// Παίρνουμε την τελευταία γραμμή του αρχείου
-			$lastLine = end($lines);
-			$date = new DateTime($lastLine, new DateTimeZone('UTC'));
-			$dateString1 = $date->format('Y-m-d\TH:i:s\Z');
-			// echo "Η τελευταία εκτέλεση έγινε στις: " . $lastLine . PHP_EOL;
+			$lastDate = end($lines);
+			$date = new DateTime($lastDate, new DateTimeZone('UTC'));
+			
+			$dateRun = $date->format('Y-m-d\TH:i:s\Z');
+
 		} 
 		else {
+			$initiateDate = "2026-01-01T00:00:00Z";
+			$date = new DateTime($initiateDate, new DateTimeZone('UTC'));
+			
+			$dateRun = $date->format('Y-m-d\TH:i:s\Z'); // Παράδειγμα δεύτερης ημερομηνίας
 			// echo "Αυτή είναι η πρώτη φορά που εκτελείται η εργασία!" . PHP_EOL;
-			file_put_contents($file, $dateString1 . PHP_EOL, FILE_APPEND | LOCK_EX);
-			// $currentDateString = $dateString2; // π.χ. 2026-09-25T12:50:00Z
-
-			// Προσθήκη της νέας ημερομηνίας στο αρχείο
-			file_put_contents($file, $dateString2 . PHP_EOL, FILE_APPEND | LOCK_EX);
-			return $dateString1;
+			file_put_contents($file, $dateRun . PHP_EOL, FILE_APPEND | LOCK_EX);
+			
 		}
+		    //καταγραφουμε την ωρα που εκτελεσαμε update
+		file_put_contents($file, $dateNow . PHP_EOL, FILE_APPEND | LOCK_EX);
 		
-		file_put_contents($file, $dateString2 . PHP_EOL, FILE_APPEND | LOCK_EX);
-		return $dateString1;
+		return $dateRun;
 	}
 	
 	public function getLastUpdatedItems($fromDate){
