@@ -5,8 +5,9 @@
 function softone_orders_page() {
     if (isset($_POST['sync_orders']) && check_admin_referer('softone_sync_orders_action', 'softone_sync_orders_nonce')) {
         $result = softone_sync_orders();
-        echo '<div class="notice notice-success"><p>' . $result['message'] .' at '. $result['lastUpdateDate']. 'with args:'.$result['args'].'</p></div>';
-		print_r($result['args']);
+		// echo date('d.m.Y H:i:s',trim( $result['args']['date_modified'],'>'));
+        echo '<div class="notice notice-success"><p>' . $result['message'] .' at '. date('d-m-Y H:i:s',strtotime($result['lastUpdateDate'])).'</p></div>';
+		// print_r($result['args']);
     }
     ?>
     <div class="wrap">

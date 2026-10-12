@@ -37,19 +37,19 @@ function softone_products_page() {
                 <?php
 					$aa=0;
 					foreach ($result['products'] as $product): 
-					$aa++;
+						$aa++;
 				?>
 					
-                <tr>
-                    <td><?php echo esc_html($aa); ?></td>
-                    <td><?php echo esc_html($product['item_code']); ?></td>
-                    <td><?php echo esc_html($product['item_descr']); ?></td>
-                    <td><?php echo esc_html($product['price_WholeSale']); ?></td>
-                    <td><?php echo esc_html($product['item_category']); ?></td>
-                    <td><?php echo esc_html($product['item_group']); ?></td>
-                    <td><?php echo esc_html($product['Manufacturers']); ?></td>
-                    <td><?php echo esc_html($product['action']); ?></td>
-                </tr>
+					<tr>
+						<td><?php echo esc_html($aa); ?></td>
+						<td><?php echo esc_html($product['item_code']); ?></td>
+						<td><?php echo esc_html($product['item_descr']); ?></td>
+						<td><?php echo esc_html($product['price_WholeSale']); ?></td>
+						<td><?php echo esc_html($product['item_category']); ?></td>
+						<td><?php echo esc_html($product['item_group']); ?></td>
+						<td><?php echo esc_html($product['Manufacturers']); ?></td>
+						<td><?php echo esc_html($product['action']); ?></td>
+					</tr>
                 <?php endforeach; ?>
             </tbody>
         </table>

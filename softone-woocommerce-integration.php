@@ -517,15 +517,10 @@ function softone_sync_orders() {
 	 $api = new Softone_API();
     if (class_exists('WooCommerce')) {
 		$fromDate=$api->lastUpdateDate('orders');
-		// echo "Last update:".$fromDate;
-        
-		//date time update, not all orders
-		// Get refunds in the last 24 hours.
-		// $dateString1 = "2026-01-01T00:00:00Z";
-		// $dateString3 = "2026-10-07T00:00:00Z";
-		// $date = new DateTime($dateString3, new DateTimeZone('UTC'));
 		
-		// $dateString2 = $date->format('Y-m-d\TH:i:s\Z'); 
+		$dateString3 = "2026-10-09T10:08:14Z";
+		$date = new DateTime($dateString3, new DateTimeZone('UTC'));
+		
 		// $argsCreated = array(
 		
 			// 'date_created' => '>' . ( $dateString1 ),
@@ -536,10 +531,7 @@ function softone_sync_orders() {
 			// //'return' => 'ids'
 		// );
         $argsUpdated = array(
-		
-			'date_updated' => '> 2026-10-11T16:59:35+00:00',
-			// 'date_modified' => '>2026-10-10T16:59:35+00:00' ,
-			//. ( $fromDate ),
+			'date_modified' => '>'. strtotime( $fromDate ), //here we check if date modified is later that the last time we checked, date time must be converted to timestamp 
 			'limit' => -1,
 			// 'type'         => 'shop_order_refund',
 			// 'status' =>array( 'wc-processing', 'wc-on-hold','wc-pending' ), 
@@ -552,7 +544,7 @@ function softone_sync_orders() {
             // $api->create_order($order);
         // }
         softone_log('sync_orders', 'Orders synchronized successfully.');
-        return ['success'=>true,'message'=>'Orders synchronized successfully.','orders'=>$orders,'lastUpdateDate'=>$fromDate,'args'=>$argsUpdated];
+        return ['success'=>true,'message'=>'Orders synchronized successfully ','orders'=>$orders,'lastUpdateDate'=>$fromDate,'args'=>$argsUpdated];
     }
 }
 
