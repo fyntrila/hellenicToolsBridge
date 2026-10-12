@@ -485,10 +485,12 @@ class Softone_API {
 			$dateRun = $date->format('Y-m-d\TH:i:s\Z'); // Παράδειγμα δεύτερης ημερομηνίας
 			// echo "Αυτή είναι η πρώτη φορά που εκτελείται η εργασία!" . PHP_EOL;
 			file_put_contents($file, $dateRun . PHP_EOL, FILE_APPEND | LOCK_EX);
+			// file_put_contents($file, $dateRun, LOCK_EX );
 			
 		}
-		    //καταγραφουμε την ωρα που εκτελεσαμε update
+		    //καταγραφουμε την ωρα που εκτελεσαμε update, με append κραταμε ολες τι εγγραφες
 		file_put_contents($file, $dateNow . PHP_EOL, FILE_APPEND | LOCK_EX);
+		// file_put_contents($file, $dateNow, LOCK_EX);
 		
 		return $dateRun;
 	}

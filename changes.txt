@@ -13,7 +13,7 @@ test if users with role customer exist in softone  (OK)
 check customers with orders (OK)
 if user with roll customer does not exist in softone (OK)
 	and customer has made orders(OK)
-	
+
 ---Order sync
 test to add an order on order checkout (or with sync button) 
  check if customer exists in softone (****keep the customer id you will need it to add the order)

@@ -3,11 +3,18 @@
  * Displays the order synchronization page for the Softone WooCommerce Integration.
  */
 function softone_orders_page() {
+	$api = new Softone_API();
     if (isset($_POST['sync_orders']) && check_admin_referer('softone_sync_orders_action', 'softone_sync_orders_nonce')) {
         $result = softone_sync_orders();
+		$orders = $result['orders'];
 		// echo date('d.m.Y H:i:s',trim( $result['args']['date_modified'],'>'));
-        echo '<div class="notice notice-success"><p>' . $result['message'] .' at '. date('d-m-Y H:i:s',strtotime($result['lastUpdateDate'])).'</p></div>';
-		// print_r($result['args']);
+        echo '<div class="notice notice-success"><p>' . $result['message'] .' at '.// date('d-m-Y H:i:s',strtotime($result['lastUpdateDate'])).
+		'</p></div>';
+		// echo "<pre>";
+		// // foreach ($result['orders'] as $order){
+			// // // echo $order->get_billing_email();
+			// print_r($result['found']);
+		// }
     }
     ?>
     <div class="wrap">
@@ -19,7 +26,7 @@ function softone_orders_page() {
         </form>
         <?php
         // Assuming softone_get_orders() function retrieves orders from Softone
-       $orders =$result['orders'];
+     
 	   // echo "<pre>";
 	   // print_r($orders);
         if ($orders) {
@@ -28,6 +35,7 @@ function softone_orders_page() {
             <table class="widefat fixed" cellspacing="0">
                 <thead>
                     <tr>
+                        <th>Key</th>
                         <th>Order ID</th>
                         <th>Customer</th>
                         <th>Customer Name</th>
@@ -41,26 +49,30 @@ function softone_orders_page() {
                         <th>Date Updated</th>
                         <th>Status</th>
                         <th>Total</th>
+                        <th>Customer S1 ID</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <?php foreach ($orders as $order_id):
-								$order=wc_get_order( $order_id );
+                    <?php foreach ($orders as $orderID):
+						$order=wc_get_order( $orderID );	
+						$state=$api->getDistrictName($order->get_billing_state());						
 								?>
                     <tr>
-                        <td><?php echo esc_html($order->get_id()); ?></td>
+                        <td><?php echo esc_html($key); ?></td>
+                        <td><?php echo esc_html($key); ?></td>
                         <td><?php echo esc_html($order->get_customer_id()); ?></td>
-                        <td><?php echo esc_html($order->get_shipping_first_name().'-'.$order->get_shipping_last_name()); ?></td>
+                        <td><?php echo esc_html($order->get_billing_first_name().'-'.$order->get_billing_last_name()); ?></td>
                         <td><?php echo esc_html($order->get_billing_email()); ?></td>
-                        <td><?php echo esc_html($order->get_shipping_address_1()); ?></td>
-                        <td><?php echo esc_html($order->get_shipping_city()); ?></td>
-                        <td><?php echo esc_html($order->get_shipping_state()); ?></td>
-                        <td><?php echo esc_html($order->get_shipping_country()); ?></td>
-                        <td><?php echo esc_html($order->get_shipping_postcode()); ?></td>
+                        <td><?php echo esc_html($order->get_billing_address_1()); ?></td>
+                        <td><?php echo esc_html($order->get_billing_city()); ?></td>
+                        <td><?php echo esc_html($state); ?></td>
+                        <td><?php echo esc_html($order->get_billing_country()); ?></td>
+                        <td><?php echo esc_html($order->get_billing_postcode()); ?></td>
                         <td><?php echo esc_html($order->get_date_created()); ?></td>
                         <td><?php echo esc_html($order->get_date_modified()); ?></td>
                         <td><?php echo esc_html($order->get_status()); ?></td>
                         <td><?php echo esc_html($order->get_total()); ?></td>
+                        <td><?php echo esc_html($order->get_meta('_S1customerID_meta_key',true)); ?></td>
                     </tr>
 						<?php 
 							foreach ( $order->get_items() as $item_id => $item ):

@@ -514,12 +514,12 @@ and update time on every update
 
 */
 function softone_sync_orders() {
-	 $api = new Softone_API();
+	$api = new Softone_API();
     if (class_exists('WooCommerce')) {
 		$fromDate=$api->lastUpdateDate('orders');
 		
-		$dateString3 = "2026-10-09T10:08:14Z";
-		$date = new DateTime($dateString3, new DateTimeZone('UTC'));
+		// $dateString3 = "2026-10-09T10:08:14Z";
+		// $date = new DateTime($dateString3, new DateTimeZone('UTC'));
 		
 		// $argsCreated = array(
 		
@@ -536,13 +536,44 @@ function softone_sync_orders() {
 			// 'type'         => 'shop_order_refund',
 			// 'status' =>array( 'wc-processing', 'wc-on-hold','wc-pending' ), 
 			//'wc-failed','wc-refunded','wc-cancelled','wc-completed'
-			//'return' => 'ids'
+			'return' => 'ids'
 		);
         // $ordersCreated = wc_get_orders($argsCreated);
         $orders = wc_get_orders($argsUpdated);
-        // foreach ($orders as $order) {
-            // $api->create_order($order);
-        // }
+		if($orders){
+			foreach ($orders as $orderID) {
+				$order=wc_get_order( $orderID );
+				$res=$api->fetchCustomer(['email'=>$order->get_billing_email()]);
+				//an den yparxei o pelatis sto s1
+				//prepei na dhmiourgiso ton pelati kai tha epistrepsi ton kodiko soft1 customer id 
+				//sti synexeia prepei na apothikeuso ton kodiko pelati sto eidiko pedio tou WooCommerce, '_S1customerID_meta_key'
+				//sozoume kai enimeronoume to timestamp telefteas enimerosis
+				if(!isset($res['cust_ID'])){
+					$order->update_meta_data( '_S1customerID_meta_key', '323' );
+					$order->save();
+					$fromDate=$api->lastUpdateDate('orders');
+				}
+				else{
+					//an yparxei enimeronoyme ta stoixeia tou kai to customerID sto meta tou order
+				}
+				//an exoume epitixia sth dimiourgia pelati
+				//meta prepei na dhmiourgiso thn paragelia sto soft1
+				
+				//meta ti dimiourgia ths paraggelias pernoyme epistrofi ton kwdiko paraggelias soft1 
+				//prepei na ton apothikeuso se eidiko pedio sthn paraggelia woocommerce	
+				// $order->update_meta_data( '_S1OrderID_meta_key', '323' );
+				// $order->save();
+				// $fromDate=$api->lastUpdateDate('orders');	
+				
+				
+				
+				
+				
+				
+				
+				// // $api->create_order($order);
+			}
+		}
         softone_log('sync_orders', 'Orders synchronized successfully.');
         return ['success'=>true,'message'=>'Orders synchronized successfully ','orders'=>$orders,'lastUpdateDate'=>$fromDate,'args'=>$argsUpdated];
     }
