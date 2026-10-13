@@ -540,34 +540,72 @@ function softone_sync_orders() {
 		);
         // $ordersCreated = wc_get_orders($argsCreated);
         $orders = wc_get_orders($argsUpdated);
+		
 		if($orders){
 			foreach ($orders as $orderID) {
 				$order=wc_get_order( $orderID );
-				$res=$api->fetchCustomer(['email'=>$order->get_billing_email()]);
-				//an den yparxei o pelatis sto s1
-				//prepei na dhmiourgiso ton pelati kai tha epistrepsi ton kodiko soft1 customer id 
-				//sti synexeia prepei na apothikeuso ton kodiko pelati sto eidiko pedio tou WooCommerce, '_S1customerID_meta_key'
-				//sozoume kai enimeronoume to timestamp telefteas enimerosis
-				if(!isset($res['cust_ID'])){ //create the customer
-					$response=$api->create_customer($order);
-					if($response['success'] && isset($response['customer_ID'])){						
-						$order->update_meta_data( '_S1customerID_meta_key', $response['customer_ID'] );
+				
+				//CHECK IF WE HAVE SOFT1 ORDER ID
+				if(!empty($order->get_meta( '_S1OrderID_meta_key', true))){ 
+					
+					//FETCH CUSTOMER DATA FROM SOFT1
+					$res=$api->fetchCustomer(['email'=>$order->get_billing_email()]);
+				
+					//an den yparxei o pelatis sto s1
+					//prepei na dhmiourgiso ton pelati kai tha epistrepsi ton kodiko soft1 customer id 
+					//sti synexeia prepei na apothikeuso ton kodiko pelati sto eidiko pedio tou WooCommerce, '_S1CustomerID_meta_key'
+					//sozoume kai enimeronoume to timestamp telefteas enimerosis
+					
+					//CREATE CUSTOMER IN SOFT1
+					if($res['success'] && (!isset($res['cust_ID']))){ 
+						
+						$response=$api->create_customer($order);
+						
+						if($response['success'] && isset($response['customer_ID'])){
+							//SAVE SOFT1 CUSTOMER ID IN ORDER META DATA
+							$order->update_meta_data( '_S1CustomerID_meta_key', $response['customer_ID'] );
+							$order->save();
+							
+							//$fromDate=$api->lastUpdateDate('orders');
+							
+							softone_log('sync_orders', 'New customer created for order ID:'.$orderID.', successfully.');
+						}
+						else{
+							//IF WE FAIL TO CREATE THE CUSTOMER WE LOG THE FAILURE AND SKIP TO THE NEXT ORDER
+							softone_log('sync_orders', 'Failed to create customer for order ID:'.$orderID.', order skipped sync with softone.');
+							continue;
+						}
+					}
+					
+					//UPDATE CUSTOMER DATA
+					else{ //update the customer
+						//an yparxei enimeronoyme ta stoixeia tou kai to customerID sto meta tou order
+						
+						//SAVE SOFT1 CUSTOMER ID IN ORDER META DATA
+						$order->update_meta_data( '_S1CustomerID_meta_key', $response['customer_ID'] );
 						$order->save();
-						$fromDate=$api->lastUpdateDate('orders');
-						softone_log('sync_orders', 'New customer created for order ID:'.$orderID.', successfully.');
+						
+						//UPDATE CUSTOMER DATA IN SOFT1 FROM ORDER DATA
+						$response=$api->update_customer($res,$order);
+						
+						// $fromDate=$api->lastUpdateDate('orders');
+						softone_log('sync_orders', 'Customer data for order ID:'.$orderID.', updated successfully.');
+					}
+					//an de exoume soft order id stin trexousa woocommerce paraggelia tote tha kanoyme create sale
+				
+					$response=$api->create_sale($order);
+					if($response['success'] && isset($response['ID'])){
+						$order->update_meta_data( '_S1OrderID_meta_key', $response['ID'] );
+						$order->save();
+						softone_log('sync_orders', 'New Order with WC_ID:'.$orderID.' and Soft1_ID:'.$response['ID'].', created successfully.');
 					}
 					else{
-						softone_log('sync_orders', 'Failed to create customer for order ID:'.$orderID.', order skipped sync with softone.');
-						continue;
+						softone_log('sync_orders', 'New Order with WC_ID:'.$orderID.' failed to be created in Soft1.');
 					}
 				}
-				else{ //update the customer
-					//an yparxei enimeronoyme ta stoixeia tou kai to customerID sto meta tou order
-					$order->update_meta_data( '_S1customerID_meta_key', $response['customer_ID'] );
-					$order->save();
-					$response=$api->update_customer($res,$order);
-					$fromDate=$api->lastUpdateDate('orders');
-					softone_log('sync_orders', 'New customer created for order ID:'.$orderID.', successfully.');
+				else{
+					$api->update_sale($order);
+					
 				}
 				//an exoume epitixia sth dimiourgia pelati
 				//meta prepei na dhmiourgiso thn paragelia sto soft1

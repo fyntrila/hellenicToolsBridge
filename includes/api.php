@@ -599,7 +599,12 @@ class Softone_API {
 		// softone_log('create_customer', $respose['success']);
 		// softone_log('state', $state_name);
 		return $response;
-
+	/*Response
+			{
+				"customer_ID": 129779,
+				"success": true
+			}
+		*/
 	}
 	
 	public function update_customer($res,$order){
@@ -706,14 +711,14 @@ class Softone_API {
 					'quantity'=>$item->get_quantity(),
 					'price'=>$item->get_product()->get_price(),
 					'discount1'=>0
-				]
+				];
 		}
 		$expn=array();
 		$expn[$item_id]=
 			[
 				'expn_ID'=>104,
 				'expn_net_val'=>5
-			]
+			];
 		$response = $this->request('js/HellenicTool.WServices/updateCustomer', [
 				'clientID' => $this->session,
 				'customer_ID'=>$order->get_meta('_S1customerID_meta_key'),
@@ -728,7 +733,7 @@ class Softone_API {
 				'shipping_district'=> $district,
 				'web_id'=> $woocommerce_customer_id,
 				'item_lines'=> $item_lines,
-				'expn'=$expn,
+				'expn'=>$expn,
 			]);
 		 
 		// softone_log('create_customer', $respose['success']);
