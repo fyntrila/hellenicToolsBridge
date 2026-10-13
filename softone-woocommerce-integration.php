@@ -548,13 +548,26 @@ function softone_sync_orders() {
 				//prepei na dhmiourgiso ton pelati kai tha epistrepsi ton kodiko soft1 customer id 
 				//sti synexeia prepei na apothikeuso ton kodiko pelati sto eidiko pedio tou WooCommerce, '_S1customerID_meta_key'
 				//sozoume kai enimeronoume to timestamp telefteas enimerosis
-				if(!isset($res['cust_ID'])){
-					$order->update_meta_data( '_S1customerID_meta_key', '323' );
-					$order->save();
-					$fromDate=$api->lastUpdateDate('orders');
+				if(!isset($res['cust_ID'])){ //create the customer
+					$response=$api->create_customer($order);
+					if($response['success'] && isset($response['customer_ID'])){						
+						$order->update_meta_data( '_S1customerID_meta_key', $response['customer_ID'] );
+						$order->save();
+						$fromDate=$api->lastUpdateDate('orders');
+						softone_log('sync_orders', 'New customer created for order ID:'.$orderID.', successfully.');
+					}
+					else{
+						softone_log('sync_orders', 'Failed to create customer for order ID:'.$orderID.', order skipped sync with softone.');
+						continue;
+					}
 				}
-				else{
+				else{ //update the customer
 					//an yparxei enimeronoyme ta stoixeia tou kai to customerID sto meta tou order
+					$order->update_meta_data( '_S1customerID_meta_key', $response['customer_ID'] );
+					$order->save();
+					$response=$api->update_customer($res,$order);
+					$fromDate=$api->lastUpdateDate('orders');
+					softone_log('sync_orders', 'New customer created for order ID:'.$orderID.', successfully.');
 				}
 				//an exoume epitixia sth dimiourgia pelati
 				//meta prepei na dhmiourgiso thn paragelia sto soft1
@@ -573,6 +586,10 @@ function softone_sync_orders() {
 				
 				// // $api->create_order($order);
 			}
+		}
+		else{
+			softone_log('sync_orders', 'Orders synchronized successfully.');
+			return ['success'=>true,'message'=>'No orders to sync','orders'=>$orders,'lastUpdateDate'=>$fromDate,'args'=>$argsUpdated];
 		}
         softone_log('sync_orders', 'Orders synchronized successfully.');
         return ['success'=>true,'message'=>'Orders synchronized successfully ','orders'=>$orders,'lastUpdateDate'=>$fromDate,'args'=>$argsUpdated];
