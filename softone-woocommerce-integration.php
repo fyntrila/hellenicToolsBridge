@@ -188,7 +188,8 @@ function softone_custom_cron_schedules($schedules) {
 // Hook into WooCommerce order creation
 function softone_create_order($order_id) {
     $order = wc_get_order($order_id);
-	
+	$isSetS1SaleID=$order->meta_exists('_S1SaleID_meta_key');
+	$s1SaleID=$order->get_meta('_S1SaleID_meta_key', true);
     if ($order) {
 		$api = new Softone_API();
 		$orders_customer_phone = $order->get_billing_phone();
@@ -200,19 +201,7 @@ function softone_create_order($order_id) {
 											]);		
 		// $soft1Customer = $api->findCustomerPhone($customer_phone);		
 		// $custID=$soft1Customer['cust_ID'];
-		//Prepare the customer data for upsertProduct
-		
-		$orders_customer_name=$order->get_billing_first_name().' '.$order->get_billing_last_name();
-		$orders_customer_address=$order->get_billing_address_1();
-		$orders_customer_postcode=$order->get_billing_postcode();
-		$orders_customer_city=$order->get_billing_city();
-		$orders_customer_state=$order->get_billing_state();
-		$orders_customer_country=$order->get_billing_country();
-		$orders_customer_district=$api->getDistrictName($orders_customer_state);
-		
-		
-		
-		
+		//Prepare the customer data for upsertProduct	
 		
 		//If customer exist in soft1 the continue to create order
 		//we will update customer data just in case something chaged
@@ -220,9 +209,19 @@ function softone_create_order($order_id) {
 		//We then continue to create the sale in soft1
 		
 		
-        if($soft1Customer){
+        if($soft1Customer && isset($soft1Customer['cust_ID'])){
 			$orders_customer_id=$soft1Customer['cust_ID'];
 			$orders_customer_code=$soft1Customer['cust_Code'];
+			
+			$orders_customer_name=$order->get_billing_first_name().' '.$order->get_billing_last_name();
+			$orders_customer_address=$order->get_billing_address_1();
+			$orders_customer_postcode=$order->get_billing_postcode();
+			$orders_customer_city=$order->get_billing_city();
+			$orders_customer_state=$order->get_billing_state();
+			$orders_customer_country=$order->get_billing_country();
+			
+			$orders_customer_district=$api->getDistrictName($orders_customer_state);
+			
 			$data = [
 					'customer_ID' =>  $orders_customer_id,
 					'customer_name' =>  $orders_customer_name,
@@ -242,10 +241,10 @@ function softone_create_order($order_id) {
 				];
 			$res = $api->update_customer($data);
 			if(isset($res['success']) && $res['success']){
-				$soft1Customer=$api->findCustomerPhone($customer_phone);
+				// $soft1Customer=$api->findCustomerPhone($customer_phone);
 				softone_log('Update data of customer with soft1 ID:', $orders_customer_id);
-				$res = $api->create_order($order, $orders_customer_id);
-				return $res;
+				$result = $api->create_order($order, $orders_customer_id);
+				return $result;
 			}
 			else {
 				softone_log('Failed to update data of customer with soft1 ID:', $orders_customer_id);
@@ -545,8 +544,8 @@ function softone_sync_orders() {
 			foreach ($orders as $orderID) {
 				$order=wc_get_order( $orderID );
 				
-				//CHECK IF WE HAVE SOFT1 ORDER ID
-				if(!empty($order->get_meta( '_S1OrderID_meta_key', true))){ 
+				//CHECK IF WE HAVE SOFT1 ORDER ID $order->meta_exists( 'your_meta_key_here' )
+				if(!$order->meta_exists( '_S1SaleID_meta_key' ) || !empty($order->get_meta( '_S1SaleID_meta_key', true))){ 
 					
 					//FETCH CUSTOMER DATA FROM SOFT1
 					$res=$api->fetchCustomer(['email'=>$order->get_billing_email()]);
@@ -557,7 +556,7 @@ function softone_sync_orders() {
 					//sozoume kai enimeronoume to timestamp telefteas enimerosis
 					
 					//CREATE CUSTOMER IN SOFT1
-					if($res['success'] && (!isset($res['cust_ID']))){ 
+					if(!$res && !isset($res['cust_ID'])){ 
 						
 						$response=$api->create_customer($order);
 						
@@ -595,7 +594,7 @@ function softone_sync_orders() {
 				
 					$response=$api->create_sale($order);
 					if($response['success'] && isset($response['ID'])){
-						$order->update_meta_data( '_S1OrderID_meta_key', $response['ID'] );
+						$order->update_meta_data( '_S1SaleID_meta_key', $response['ID'] );
 						$order->save();
 						softone_log('sync_orders', 'New Order with WC_ID:'.$orderID.' and Soft1_ID:'.$response['ID'].', created successfully.');
 					}
@@ -612,7 +611,7 @@ function softone_sync_orders() {
 				
 				//meta ti dimiourgia ths paraggelias pernoyme epistrofi ton kwdiko paraggelias soft1 
 				//prepei na ton apothikeuso se eidiko pedio sthn paraggelia woocommerce	
-				// $order->update_meta_data( '_S1OrderID_meta_key', '323' );
+				// $order->update_meta_data( '_S1SaleID_meta_key', '323' );
 				// $order->save();
 				// $fromDate=$api->lastUpdateDate('orders');	
 				
