@@ -609,7 +609,7 @@ class Softone_API {
 		*/
 	}
 	
-	public function update_customer($res,$order){
+	public function update_customer($S1Customer, $order){
 		/*
 			URL: https://hellenictooloe.oncloud.gr/s1services/js/HellenicTool.WServices/updateCustomer
 			Πελάτης Εσωτερικού
@@ -645,9 +645,9 @@ class Softone_API {
 		
 		$response = $this->request('js/HellenicTool.WServices/updateCustomer', [
 			'clientID' => $this->session,
-			'customer_ID'=>$res['cust_ID'],
+			'customer_ID'=>$S1Customer['cust_ID'],
 			'customer_name'=> $order->get_billing_first_name() .' - '. $order->get_billing_last_name() .' - ' . $order->get_billing_company(),
-			'customer_code'=> $res['cust_Code'], //star create new code
+			'customer_code'=> $S1Customer['cust_Code'], //star create new code
 			'customer_category'=> 3099,
 			'customer_address'=> $order->get_billing_address_1(),
 			'customer_zip'=> $order->get_billing_postcode(),
