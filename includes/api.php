@@ -454,7 +454,8 @@ class Softone_API {
 		*/
 		$response = $this->request('js/HellenicTool.WServices/fetchCustomer', [
 			'clientID' => $this->session,
-			'email' =>$data['email'],
+			'appID' => '1000',
+			'email' =>$data,
 			'limit' =>1
 		]);
 		return $response;
@@ -609,7 +610,7 @@ class Softone_API {
 		*/
 	}
 	
-	public function update_customer($S1Customer, $order){
+	public function update_customer($order){
 		/*
 			URL: https://hellenictooloe.oncloud.gr/s1services/js/HellenicTool.WServices/updateCustomer
 			Πελάτης Εσωτερικού
@@ -645,9 +646,9 @@ class Softone_API {
 		
 		$response = $this->request('js/HellenicTool.WServices/updateCustomer', [
 			'clientID' => $this->session,
-			'customer_ID'=>$S1Customer['cust_ID'],
+			'customer_ID'=>$order->get_meta('_S1customerID_meta_key',true),
 			'customer_name'=> $order->get_billing_first_name() .' - '. $order->get_billing_last_name() .' - ' . $order->get_billing_company(),
-			'customer_code'=> $S1Customer['cust_Code'], //star create new code
+			// 'customer_code'=> $S1Customer['cust_Code'], //star create new code
 			'customer_category'=> 3099,
 			'customer_address'=> $order->get_billing_address_1(),
 			'customer_zip'=> $order->get_billing_postcode(),
@@ -707,7 +708,7 @@ class Softone_API {
 		
 		$item_lines=array();
 		foreach ( $order->get_items() as $item_id => $item ){
-			$item_lines[$item_id]=
+			$item_lines[]=
 				[
 					'SKU'=>$item->get_product()->get_sku(),
 					'quantity'=>$item->get_quantity(),
@@ -717,7 +718,7 @@ class Softone_API {
 		}
 		
 		$expn=array();
-		$expn[$item_id]=
+		$expn[]=
 			[
 				'expn_ID'=>104,
 				'expn_net_val'=>5
@@ -727,7 +728,7 @@ class Softone_API {
 		
 		$response = $this->request('js/HellenicTool.WServices/createSale', [
 				'clientID' => $this->session,
-				'customer_ID'=>$order->get_meta('_S1customerID_meta_key'),
+				'customer_ID'=>$order->get_meta('_S1customerID_meta_key',true),
 				'sales_series'=> 7001,
 				'paymentID'=>1000, //tropos pliromis
 				'shipmentID'=> 1,//tropos apostolis
@@ -806,8 +807,8 @@ class Softone_API {
 			];
 		$response = $this->request('js/HellenicTool.WServices/updateCustomer', [
 				'clientID' => $this->session,
-				'customer_ID'=>$order->get_meta('_S1customerID_meta_key'),
-				'sale_id'=>$order->get_meta('_S1SaleID_meta_key'),
+				'customer_ID'=>$order->get_meta('_S1customerID_meta_key',true),
+				'sale_id'=>$order->get_meta('_S1SaleID_meta_key',true),
 				'sales_series'=> 7001,
 				'paymentID'=>1000, //tropos pliromis
 				'shipmentID'=> 1,//tropos apostolis

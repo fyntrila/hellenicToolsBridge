@@ -59,7 +59,7 @@ function softone_woocommerce_integration_init() {
     add_action('softone_cron_sync_products', 'softone_sync_products');
 	#add_action('softone_cron_sync_orders', 'softone_sync_orders');
     // Hook into WooCommerce order processed
-    add_action('woocommerce_checkout_order_processed', 'softone_create_order', 10, 1);
+    add_action('woocommerce_checkout_order_processed', 'softone_create_order', 10, 3);
 	//add_action( 'woocommerce_new_order', 'softone_create_order', 10, 1 );
 	//add_action( 'save_post_shop_order', 'softone_create_order', 10, 1 );
 	#add_action( 'woocommerce_update_order', 'softone_create_order', 10, 1 );
@@ -188,25 +188,27 @@ function softone_custom_cron_schedules($schedules) {
 
 
 // Hook into WooCommerce order creation and send order to Soft1
-function softone_create_order($order_id) {
-	
-    $order = wc_get_order($order_id);
+function softone_create_order($order_id,$data,$order) {
+	$order2_id=$order->get_id();
+	softone_log('hook create order','Order creation for order id:'.$order_id);
+    // $order = wc_get_order($order_id);.'order:id2'. $order2_id.'data:'.json_encode($data).'order'.json_encode($order)
 	
 	
     if (!empty($order_id) && isset($order)) {
 		
-		$isSetS1SaleID=$order->meta_exists('_S1SaleID_meta_key');
-		$s1SaleID=$order->get_meta('_S1SaleID_meta_key', true);
+		// $isSetS1SaleID=$order->meta_exists('_S1SaleID_meta_key');
+		// $s1SaleID=$order->get_meta('_S1SaleID_meta_key', true);
 		
 		$api = new Softone_API();
 		$orders_customer_phone = $order->get_billing_phone();
 		$orders_customer_email = $order->get_billing_email();
 		
 		//Fetch customer from soft1 using the order email.
-		$soft1Customer = $api->fetchCustomer([
-												'email'=>$orders_customer_email,
-												'limit'=>1
-											]);		
+		$response = $api->fetchCustomer($orders_customer_email	);		
+		$soft1CustomerID=0;
+		$soft1CustomerID=$response['body'][0]['cust_ID'];
+		softone_log('order_creation','Order creation for order id:'. $order_id);
+		softone_log('fetch_customer','Found customer with soft1 ID:'. $soft1CustomerID."email:".$orders_customer_email."response:".json_encode($response['body']));
 		// $soft1Customer = $api->findCustomerPhone($customer_phone);		
 		// $custID=$soft1Customer['cust_ID'];
 		//Prepare the customer data for upsertProduct	
@@ -217,19 +219,33 @@ function softone_create_order($order_id) {
 		//We then continue to create the sale in soft1
 		
 		//customer email exists  we update his data and create order
-        if($soft1Customer && isset($soft1Customer['cust_ID'])){ 
-			
-			$res = $api->update_customer($soft1Customer, $order);
+        if($soft1CustomerID<>0){ 
+			softone_log('fetch_customer','2Found customer with soft1 ID:'. $soft1CustomerID);
+		    
+			$order->update_meta_data( '_S1customerID_meta_key', $soft1CustomerID );
+			$order->save();
+			softone_log('Updated data of customer with soft1 ID:', $soft1CustomerID);
+			$res = $api->update_customer($order);
 			if(isset($res['success']) && $res['success']){
 				// $soft1Customer=$api->findCustomerPhone($customer_phone);
-				$order->update_meta_data( '_S1customerID_meta_key', $res['customer_ID'] );
-				$order->save();
-				softone_log('Updated data of customer with soft1 ID:', $res['customer_ID']);
+				if(isset($res['customer_ID'])){
+					$order->update_meta_data( '_S1customerID_meta_key', $res['customer_ID'] );
+					$order->save();
+					softone_log('Updated data of customer with soft1 ID:', $res['customer_ID']);
+				}
+				else{
+					softone_log('Failed to update data of customer no soft1 ID returned:', $orders_customer_id);
+				}
 				
-				$result = $api->create_sale($order); /// we create the new order
-				$order->update_meta_data( '_S1SaleID_meta_key', $result['ID'] );
-				$order->save();
-				softone_log('create_new_order', 'New Order with WC_ID:'.$order_id.' and Soft1_ID:'.$result['ID'].', created successfully.');
+				$res_CreateSale = $api->create_sale($order); /// we create the new order
+				if(isset($res_CreateSale['success']) && $res_CreateSale['success']){
+					$order->update_meta_data( '_S1SaleID_meta_key', $res_CreateSale['ID'] );
+					$order->save();
+					softone_log('create_new_order', 'New Order with WC_ID:'.$order_id.' and Soft1_ID:'.$res_CreateSale['ID'].', created successfully.'.'response:'.json_encode($res_CreateSale));
+				}
+				else{
+					softone_log('create_new_order', 'Failed to create new Order with WC_ID:'.$order_id.' and Soft1Customer_ID:'.$res['customer_ID'].',error.'.$res_CreateSale['msg'].'Softone ID'.$res_CreateSale['ID']);
+				}
 				// return $result;
 			}
 			else {
@@ -240,7 +256,7 @@ function softone_create_order($order_id) {
 		}
 		//customer email does not exist we create new customer and then create the order
 		else{
-			
+			return;
 			$res=$api->create_customer($order);
 			$order->update_meta_data( '_S1customerID_meta_key', $res['customer_ID'] );
 			$order->save();
