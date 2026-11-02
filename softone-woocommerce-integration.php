@@ -59,7 +59,7 @@ function softone_woocommerce_integration_init() {
     add_action('softone_cron_sync_products', 'softone_sync_products');
 	#add_action('softone_cron_sync_orders', 'softone_sync_orders');
     // Hook into WooCommerce order processed
-    add_action('woocommerce_checkout_order_processed', 'softone_create_order', 10, 3);
+    #add_action('woocommerce_checkout_order_processed', 'softone_create_order', 10, 3);
 	//add_action( 'woocommerce_new_order', 'softone_create_order', 10, 1 );
 	//add_action( 'save_post_shop_order', 'softone_create_order', 10, 1 );
 	#add_action( 'woocommerce_update_order', 'softone_create_order', 10, 1 );
