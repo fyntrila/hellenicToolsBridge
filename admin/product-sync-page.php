@@ -16,6 +16,7 @@ function softone_products_page() {
         $result = softone_sync_product_descs_specs();
         if (is_array($result) && isset($result['success']) && $result['success']) {
             echo '<div class="notice notice-success"><p>' . esc_html($result['message']) . '</p></div>';
+			$products=$result['products'];
         } else {
             echo '<div class="notice notice-error"><p>Failed to synchronize products.</p></div>';
         }
@@ -33,7 +34,7 @@ function softone_products_page() {
             <?php submit_button('Sync Product Descriptions & Specs'); ?>
         </form>
 		
-        <?php if (isset($result) && is_array($result) && isset($result['products'])): ?>
+        <?php if (isset($result) && is_array($result) && isset($result['products']) && isset($_POST['sync_products'])): ?>
         <h2>Synchronized Products</h2>
         <table class="widefat fixed" cellspacing="0">
             <thead>
@@ -53,7 +54,7 @@ function softone_products_page() {
 				// echo "<pre>";
 				// print_r($result);
 				// echo "</pre>";
-					$aa=0;
+					// $aa=0;
 					
 					foreach ($products as $product): 
 						$aa++;
@@ -70,6 +71,34 @@ function softone_products_page() {
 						<td><?php echo esc_html($product['action']); ?></td>
 					</tr>
                 <?php endforeach; ?>
+            </tbody>
+        </table>
+        <?php endif; ?>
+		
+		
+		
+		
+		 <?php if (isset($result) && is_array($result) && isset($result['products']) && isset($_POST['sync_product_descs_specs'])): ?>
+        <h2>Synchronized product_descs_specs</h2>
+        <table class="widefat fixed" cellspacing="0">
+            <thead>
+                <tr>
+                    <th>Counter</th>
+                    <th>SKU</th>
+                    <th>Description</th>
+                    <th>Price</th>
+                    <th>Category</th>
+                    <th>Group</th>
+                    <th>Manufacturers</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php
+				 echo "<pre>";
+				print_r($results);
+				echo "</pre>";
+				?>
             </tbody>
         </table>
         <?php endif; ?>

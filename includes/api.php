@@ -499,9 +499,9 @@ class Softone_API {
 	}
 	
 	
-	//	https://hellenictooloe.oncloud.gr/s1services/js/HellenicTool.WServices/getLastUpdatedItems
+	
 	public function getLastUpdatedItems($fromDate){
-		$response = $this->request('js/HellenicTool.WServices/getLastUpdatedItems', [
+		$response = $this->request('js/HellenicTool.WServices/getLastUpdatedItems', [    //	https://hellenictooloe.oncloud.gr/s1services/js/HellenicTool.WServices/getLastUpdatedItems
 			'clientID' => $this->session,
 			'appID' => '1000',
 			'updateItemDate'=> $fromDate,
@@ -515,7 +515,7 @@ class Softone_API {
 			'clientID' => $this->session,
 			'appID' => '1000',
 			'object' => 'ITEM',
-			'list'=>'NINJAITEMS',
+			'list'=>'NINJAITEMS', //"NINJAITEMSVAR" GIA TA VARIABLE
 			'filters'=>'ITEM.CODE=*' ,// Με τη χρήση των φίλτρων αλλάζει το dataset της BrowserData - example ITEM.CODE=1*
 		]);
 		if(isset($response['success'])){
@@ -530,7 +530,7 @@ class Softone_API {
 		else{
 			return ['error didnt get a response'];
 		}
-		return [$response, $response2];
+		return $response2;
 	//['body']['reqID']
 	}
 	

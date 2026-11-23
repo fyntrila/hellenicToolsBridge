@@ -121,7 +121,7 @@ function softone_woocommerce_integration_init() {
 function my_readonly_product_fields() {
 	return array(
 		'_soft1_item_id'   => __( 'Soft1 Item Id (MTRL)', 'woocommerce' ),
-		// '_supplier_code'     => __( 'Supplier code', 'woocommerce' ),
+		// '_soft1_item_code'     => __( 'Soft1 Item Code', 'woocommerce' ),
 		// '_last_sync_date'    => __( 'Last sync date', 'woocommerce' ),
 	);
 }
@@ -436,10 +436,82 @@ function woo2soft1_sync_products() {
 	return;
 }
 function softone_sync_product_descs_specs() {
-	
+	$results=array();
+	$results['skipped']=0;
+	$results['updated']=0;
+	$results['invalid']=0;
 	if (class_exists('WooCommerce')) {
         $api = new Softone_API();
-		$results=$api->updateSpecsAndDesc();
+		$products=$api->updateSpecsAndDesc();
+		if ($products && isset($products['body'])) {
+            foreach ($products['body']['rows'] as $product) {
+				// print_r($product);die;
+				if(str_contains($product[3],'-')){
+					$sku=explode('-',$product[3])[1];
+					// echo $sku."<br>";
+					$existing_product_id = wc_get_product_id_by_sku($sku);
+					if ($existing_product_id) {
+						$product_obj = new WC_Product($existing_product_id);
+						$product_obj->set_short_description(sanitize_text_field($product[5])); 
+						$product_obj->set_description(sanitize_text_field($product[5])); 
+						$product_obj->set_short_description(sanitize_text_field($product[5])); 
+						$product_obj->update_meta_data( '_soft1_item_id', $product[1]);
+						if(isset($product[4]) && !empty($product[4])){
+							$attributes = $product_obj->get_attributes();
+							
+							if (isset( $attributes['texnika_xaraktiristika2'] ) ) {
+								// Exists: update it
+								$attributes['texnika_xaraktiristika2']->set_options( array( $product[4] ) );
+							} 
+							else {
+								// Doesn't exist: create it
+								$attr = new WC_Product_Attribute();
+								$attr->set_id( 0 ); // 0 = custom attribute
+								$attr->set_name( 'Τεχνικά χαρακτηριστικά' );
+								$attr->set_options( array( $product[4] ) );
+								$attr->set_visible( true );
+								$attr->set_variation( false );
+
+								$attributes['texnika_xaraktiristika2'] = $attr;
+							}
+								// print_r($attributes);die;
+								$product_obj->set_attributes( $attributes );
+						}
+						$product_obj->save();
+						if ( isset( $attributes['pa_texnika-xaraktiristika'] ) ) {
+								unset( $attributes['pa_texnika-xaraktiristika'] );
+
+								$product_obj->set_attributes( $attributes );
+								$product_obj->save();
+
+								// Also unlink the terms from the product
+								wp_set_object_terms( $product_obj->get_id(), array(), 'pa_color' );
+							}
+						$results[$sku]['updated']='updated';
+						$results[$sku]['mtrl']=$product[1];
+						$results[$sku]['descr']=$product[5];
+						$results[$sku]['itemcode']=$product[3];
+						$results['updated']++;
+					}
+					else {
+						$results['skipped']++;
+						$results[$sku]['updated']='not found';
+						continue;
+					}
+				}
+				else{
+					$results['invalid']++;
+					$results[$product[3]]['updated']='invalid sku';
+					continue;
+				}
+			}
+			
+			$results['messages']='no body found!';
+		}
+		else 
+			$results['message']='no woocommerce class WTF';
+			return $results;
+
 	}
 	
 	
