@@ -7,6 +7,15 @@ function softone_products_page() {
         $result = softone_sync_products();
         if (is_array($result) && isset($result['success']) && $result['success']) {
             echo '<div class="notice notice-success"><p>' . esc_html($result['message']) . '</p></div>';
+			$products=$result['products'];
+        } else {
+            echo '<div class="notice notice-error"><p>Failed to synchronize products.</p></div>';
+        }
+    }
+	if (isset($_POST['sync_product_descs_specs'])) {
+        $result = softone_sync_product_descs_specs();
+        if (is_array($result) && isset($result['success']) && $result['success']) {
+            echo '<div class="notice notice-success"><p>' . esc_html($result['message']) . '</p></div>';
         } else {
             echo '<div class="notice notice-error"><p>Failed to synchronize products.</p></div>';
         }
@@ -17,7 +26,13 @@ function softone_products_page() {
         <form method="post">
             <input type="hidden" name="sync_products" value="1" />
             <?php submit_button('Sync Products'); ?>
+        </form> 
+		
+		<form method="post">
+			<input type="hidden" name="sync_product_descs_specs" value="1" />
+            <?php submit_button('Sync Product Descriptions & Specs'); ?>
         </form>
+		
         <?php if (isset($result) && is_array($result) && isset($result['products'])): ?>
         <h2>Synchronized Products</h2>
         <table class="widefat fixed" cellspacing="0">
@@ -35,8 +50,12 @@ function softone_products_page() {
             </thead>
             <tbody>
                 <?php
+				// echo "<pre>";
+				// print_r($result);
+				// echo "</pre>";
 					$aa=0;
-					foreach ($result['products'] as $product): 
+					
+					foreach ($products as $product): 
 						$aa++;
 				?>
 					

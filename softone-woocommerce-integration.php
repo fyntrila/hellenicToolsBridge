@@ -59,8 +59,8 @@ function softone_woocommerce_integration_init() {
     add_action('softone_cron_sync_products', 'softone_sync_products');
 	#add_action('softone_cron_sync_orders', 'softone_sync_orders');
     // Hook into WooCommerce order processed
-    #add_action('woocommerce_checkout_order_processed', 'softone_create_order', 10, 3);
-	//add_action( 'woocommerce_new_order', 'softone_create_order', 10, 1 );
+    add_action('woocommerce_checkout_order_processed', 'softone_create_order', 10, 3);
+	#add_action( 'woocommerce_new_order', 'softone_create_order', 10, 1 );
 	//add_action( 'save_post_shop_order', 'softone_create_order', 10, 1 );
 	#add_action( 'woocommerce_update_order', 'softone_create_order', 10, 1 );
 	// Hook into post product save
@@ -71,8 +71,62 @@ function softone_woocommerce_integration_init() {
     // Hook into WooCommerce customer creation
  //   add_action('user_register', 'softone_send_new_customer_to_api', 10, 1);
     // Schedule cron jobs
+	// Show the fields in Product data > General.
+	add_action( 'woocommerce_product_options_stock_status', function () {
+		global $product_object;
+
+		echo '<div class="options_group">';
+
+		foreach ( my_readonly_product_fields() as $key => $label ) {
+			$value = $product_object ? $product_object->get_meta( $key, true ) : '';
+
+			woocommerce_wp_text_input( array(
+				'id'                => 'display' . $key,
+				'name'              => '', // Never submitted, never saved.
+				'label'             => $label,
+				'value'             => $value !== '' ? $value : '—',
+				'custom_attributes' => array(
+					'readonly' => 'readonly',
+					'tabindex' => '-1',
+				),
+				'style'             => 'background:#f6f7f7;cursor:not-allowed;',
+			) );
+		}
+
+		echo '</div>';
+	} );
+
+	// // Optional: a column per field in Products > All Products.
+	// add_filter( 'manage_edit-product_columns', function ( $columns ) {
+		// foreach ( my_readonly_product_fields() as $key => $label ) {
+			// $columns[ 'col' . $key ] = $label;
+		// }
+		// return $columns;
+	// } );
+
+	// add_action( 'manage_product_posts_custom_column', function ( $column, $post_id ) {
+		// foreach ( my_readonly_product_fields() as $key => $label ) {
+			// if ( 'col' . $key === $column ) {
+				// $value = get_post_meta( $post_id, $key, true );
+				// echo $value !== '' ? esc_html( $value ) : '—';
+			// }
+		// }
+	// }, 10, 2 );
    softone_schedule_cron_jobs();
 }
+/**
+ * Read-only custom fields for WooCommerce products (admin only).
+ * Add or remove fields here: 'meta_key' => 'Label'
+ */
+function my_readonly_product_fields() {
+	return array(
+		'_soft1_item_id'   => __( 'Soft1 Item Id (MTRL)', 'woocommerce' ),
+		// '_supplier_code'     => __( 'Supplier code', 'woocommerce' ),
+		// '_last_sync_date'    => __( 'Last sync date', 'woocommerce' ),
+	);
+}
+
+
 /**
  * Snippet Name:	WooCommerce Only Allow Number Input For Billing Phone
  * Snippet Author:	ecommercehints.com
@@ -108,7 +162,7 @@ function softone_schedule_cron_jobs() {
 // Clear scheduled cron jobs on deactivation
 function softone_clear_scheduled_cron_jobs() {
     wp_clear_scheduled_hook('softone_cron_sync_products');
-    wp_clear_scheduled_hook('softone_cron_sync_orders');
+  #  wp_clear_scheduled_hook('softone_cron_sync_orders');
 }
 register_deactivation_hook(__FILE__, 'softone_clear_scheduled_cron_jobs');
 
@@ -205,8 +259,11 @@ function softone_create_order($order_id,$data,$order) {
 		
 		//Fetch customer from soft1 using the order email.
 		$response = $api->fetchCustomer($orders_customer_email	);		
+		softone_log('fetchCustomer',json_encode($response));
+		softone_log('fetchCustomer',json_encode($response['counter']));
 		$soft1CustomerID=0;
-		$soft1CustomerID=$response['body'][0]['cust_ID'];
+		if($response['counter']<>0)
+			$soft1CustomerID=$response['body'][0]['cust_ID'];
 		softone_log('order_creation','Order creation for order id:'. $order_id);
 		softone_log('fetch_customer','Found customer with soft1 ID:'. $soft1CustomerID."email:".$orders_customer_email."response:".json_encode($response['body']));
 		// $soft1Customer = $api->findCustomerPhone($customer_phone);		
@@ -256,7 +313,6 @@ function softone_create_order($order_id,$data,$order) {
 		}
 		//customer email does not exist we create new customer and then create the order
 		else{
-			return;
 			$res=$api->create_customer($order);
 			$order->update_meta_data( '_S1customerID_meta_key', $res['customer_ID'] );
 			$order->save();
@@ -379,6 +435,21 @@ function softone_send_new_customer_to_api($customer_id) {
 function woo2soft1_sync_products() {
 	return;
 }
+function softone_sync_product_descs_specs() {
+	
+	if (class_exists('WooCommerce')) {
+        $api = new Softone_API();
+		$results=$api->updateSpecsAndDesc();
+	}
+	
+	
+	
+	return ['success' => true, 'message' => 'Ok message', 'products' => $results];
+	
+	
+	
+}
+
 // Sync products
 function softone_sync_products() {
     if (class_exists('WooCommerce')) {
@@ -405,6 +476,8 @@ function softone_sync_products() {
                     $product_obj->set_name(sanitize_text_field($product['item_descr']));
                     $product_obj->set_price(floatval($product['price_WholeSale']));
                     $product_obj->set_regular_price(floatval($product['price_WholeSale']));
+					$product_obj->update_meta_data( '_soft1_item_id', $product['item_id']);
+					
                     if($product['WebActive']==0) {
 						$product_obj->set_stock_quantity(intval('0'));
 					}

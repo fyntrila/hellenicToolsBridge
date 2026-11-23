@@ -497,6 +497,8 @@ class Softone_API {
 		
 		return $dateRun;
 	}
+	
+	
 	//	https://hellenictooloe.oncloud.gr/s1services/js/HellenicTool.WServices/getLastUpdatedItems
 	public function getLastUpdatedItems($fromDate){
 		$response = $this->request('js/HellenicTool.WServices/getLastUpdatedItems', [
@@ -505,6 +507,31 @@ class Softone_API {
 			'updateItemDate'=> $fromDate,
 		]);
 		return $response;		
+	}
+	
+	public function updateSpecsAndDesc(){
+				
+		$response = $this->request('getBrowserInfo', [
+			'clientID' => $this->session,
+			'appID' => '1000',
+			'object' => 'ITEM',
+			'list'=>'NINJAITEMS',
+			'filters'=>'ITEM.CODE=*' ,// Με τη χρήση των φίλτρων αλλάζει το dataset της BrowserData - example ITEM.CODE=1*
+		]);
+		if(isset($response['success'])){
+			$response2=$this->request('getBrowserData', [
+				'clientID' => $this->session,
+				'appID' => '1000',
+				'reqID' => $response['body']['reqID'],
+				'start'=>0,
+				'limit'=>$response['body']['totalcount'] ,// Με τη χρήση των φίλτρων αλλάζει το dataset της BrowserData - example ITEM.CODE=1*
+			]);
+		}
+		else{
+			return ['error didnt get a response'];
+		}
+		return [$response, $response2];
+	//['body']['reqID']
 	}
 	
 	public function updateInsertItems($lastUpdatedItems){
@@ -670,27 +697,34 @@ class Softone_API {
 	
 	public function create_sale($order){
 	/*
-		https://hellenictooloe.oncloud.gr/s1services/js/HellenicTool.WServices/createSale
+		https://hellenictooloe.oncloud.gr/s1services/js/HellenicTool.WServicesNew/createSale2
 		Request
 		{
-			"clientID": "9J…11",
+			"clientID": "…",
 			"customerID": "127096",
 			"sales_series": 7001,
 			"paymentID": 1000,
 			"shipmentID": 1,
 			"shipkindID": 1000,
-			"customer_remarks": "",
-			"shipping_address": "Σύνταγμα",if shipping is set else billing
-			"shipping_zip": "11111",if shipping is set else billing
-			"shipping_district": "Αθήνα",if shipping is set else billing
-			"shipping_city": "Αθήνα",if shipping is set else billing
+			"customer_remarks": "TEST WEB SERVICES",
+			"shipping_address": "Σύνταγμα",
+			"shipping_zip": "11111",
+			"shipping_district": "Αθήνα",
+			"shipping_city": "Αθήνα",
 			"web_id": 660,
 			"item_lines": [
 				{
-					"SKU": "12",
-					"mtrl": "95062",
+					"SKU": "7330509743324",
+					"mtrl": "117842",
 					"quantity": 1,
 					"price": "10.00",
+					"discount1": 0
+				},
+				 {
+					"SKU": "7330509743331",
+					"mtrl": "117842",
+					"quantity": 1,
+					"price": "2",
 					"discount1": 0
 				}
 			],
@@ -726,7 +760,7 @@ class Softone_API {
 		$order_remarks =  sanitize_text_field($order->get_customer_note());
 		$district=$this->getDistrictName($order->get_billing_state());
 		
-		$response = $this->request('js/HellenicTool.WServices/createSale', [
+		$response = $this->request('js/HellenicTool.WServicesNew/createSale2', [
 				'clientID' => $this->session,
 				'customer_ID'=>$order->get_meta('_S1customerID_meta_key',true),
 				'sales_series'=> 7001,
@@ -805,7 +839,7 @@ class Softone_API {
 				'expn_ID'=>104,
 				'expn_net_val'=>5
 			];
-		$response = $this->request('js/HellenicTool.WServices/updateCustomer', [
+		$response = $this->request('js/HellenicTool.WServicesNew/updateCustomer', [
 				'clientID' => $this->session,
 				'customer_ID'=>$order->get_meta('_S1customerID_meta_key',true),
 				'sale_id'=>$order->get_meta('_S1SaleID_meta_key',true),
