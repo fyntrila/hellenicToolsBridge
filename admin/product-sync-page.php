@@ -77,30 +77,47 @@ function softone_products_page() {
 		
 		
 		
-		
-		 <?php if (isset($result) && is_array($result) && isset($result['products']) && isset($_POST['sync_product_descs_specs'])): ?>
+		<?php if (isset($result) && is_array($result) && isset($products) && isset($_POST['sync_product_descs_specs'])): 
+		echo "Skipped:".$products['skipped'].", Updated:".$products['updated'].", Invalid:".$products['invalid']; ?>
         <h2>Synchronized product_descs_specs</h2>
+		 
         <table class="widefat fixed" cellspacing="0">
             <thead>
                 <tr>
                     <th>Counter</th>
                     <th>SKU</th>
+                    <th>ItemCode</th>
+                    <th>Soft1Code(mtrl)</th>
                     <th>Description</th>
-                    <th>Price</th>
-                    <th>Category</th>
-                    <th>Group</th>
-                    <th>Manufacturers</th>
+                    <th>TechSpecs</th>
                     <th>Action</th>
                 </tr>
             </thead>
             <tbody>
                 <?php
-				 echo "<pre>";
-				print_r($results);
-				echo "</pre>";
+				// echo "<pre>";
+				// print_r($result);
+				// echo "</pre>";
+					// $aa=0;
+					
+					foreach ($products as $sku=>$product): 
+					if(in_array($sku,['skipped','updated','invalid'])) continue; 
+						$aa++;
 				?>
+					
+					<tr>
+						<td><?php echo esc_html($aa); ?></td>
+						<td><?php echo esc_html($sku); ?></td>
+						<td><?php echo esc_html($product['itemcode']); ?></td>
+						<td><?php echo esc_html($product['mtrl']); ?></td>
+						<td><?php echo esc_html($product['descr']); ?></td>
+						<td><?php echo esc_html($product['techSpecs']); ?></td>
+						<td><?php echo esc_html($product['updated']); ?></td>
+					</tr>
+                <?php endforeach; ?>
             </tbody>
         </table>
+         
         <?php endif; ?>
     </div>
     <?php

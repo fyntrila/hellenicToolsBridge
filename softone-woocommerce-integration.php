@@ -454,8 +454,7 @@ function softone_sync_product_descs_specs() {
 						$product_obj = new WC_Product($existing_product_id);
 						$product_obj->set_short_description(sanitize_text_field($product[5])); 
 						$product_obj->set_description(sanitize_text_field($product[5])); 
-						$product_obj->set_short_description(sanitize_text_field($product[5])); 
-						$product_obj->update_meta_data( '_soft1_item_id', $product[1]);
+						$product_obj->update_meta_data( '_soft1_item_id', $product[2]);
 						if(isset($product[4]) && !empty($product[4])){
 							$attributes = $product_obj->get_attributes();
 							
@@ -488,8 +487,9 @@ function softone_sync_product_descs_specs() {
 								wp_set_object_terms( $product_obj->get_id(), array(), 'pa_color' );
 							}
 						$results[$sku]['updated']='updated';
-						$results[$sku]['mtrl']=$product[1];
+						$results[$sku]['mtrl']=$product[2];
 						$results[$sku]['descr']=$product[5];
+						$results[$sku]['techSpecs']=$product[4];
 						$results[$sku]['itemcode']=$product[3];
 						$results['updated']++;
 					}
@@ -506,11 +506,11 @@ function softone_sync_product_descs_specs() {
 				}
 			}
 			
-			$results['messages']='no body found!';
+			
 		}
 		else 
-			$results['message']='no woocommerce class WTF';
-			return $results;
+			
+			return ['success' => true, 'message' => 'woocommerce class WTF', 'products' => $results];
 
 	}
 	

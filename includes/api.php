@@ -528,6 +528,7 @@ class Softone_API {
 			]);
 		}
 		else{
+			softone_log('Update Specs and Descs', 'Error didnt get a response: '.$response);
 			return ['error didnt get a response'];
 		}
 		return $response2;
@@ -739,6 +740,38 @@ class Softone_API {
 			"ID": 86428
 		}
 	*/
+	
+	
+	/*
+	{
+"clientID": "9J8pM4T8Kqvm9JOmHL1LIL5OGrXYI4bvPrTLLLTLT6XYIMf4SaX7S7LANoKtH756GIKsC4189JT4K5HHL4baLc4bDKH0MLSbDKHLK2KtHd5LLMjPGK109JT3HKybDqH8GaGbDKCbDKHaLr1mOarOKNPKGarKLqDLTK1aGIKsC4fqP5HVM4rbNsrmOaXq9JOmGaWbDqKbDqD7L4DLPIKrGrHPSarH9JT3SaqbDqCbDZ1rK2KrHKrMG6X9KafmQ6589JOm9JOmPrTOTLD8RoKrGt989JT6JLLHKs5tJLbHPLXKGG",
+"customerID": "130189",
+"sales_series": 7001,
+    "paymentID": 1000,
+    "shipmentID": 1,
+    "shipkindID": 1000,
+    "customer_remarks": "Test paraggelia",
+    "shipping_address": "7hs merarchias 126",
+    "shipping_zip": "60133",
+    "shipping_district": "Αθήνα",
+    "shipping_city": "Αθήνα",
+    "web_id": 150,
+    "item_lines": [
+        {
+            "SKU": "578600",
+            "quantity": 1,
+            "price": "545.58",
+            "discount1": 0,
+            "mtrl":"117743"
+        }     
+    ],
+
+    "expn": [{
+        "expn_ID": 104,
+        "expn_net_val": 5
+    }]
+}
+*/
 		
 		$item_lines=array();
 		foreach ( $order->get_items() as $item_id => $item ){
@@ -747,6 +780,7 @@ class Softone_API {
 					'SKU'=>$item->get_product()->get_sku(),
 					'quantity'=>$item->get_quantity(),
 					'price'=>$item->get_product()->get_price(),
+					'mtrl'=>$item->get_product()->get_meta('_soft1_item_id',true),
 					'discount1'=>0
 				];
 		}
@@ -762,7 +796,7 @@ class Softone_API {
 		
 		$response = $this->request('js/HellenicTool.WServicesNew/createSale2', [
 				'clientID' => $this->session,
-				'customer_ID'=>$order->get_meta('_S1customerID_meta_key',true),
+				'customerID'=>$order->get_meta('_S1customerID_meta_key',true),
 				'sales_series'=> 7001,
 				'paymentID'=>1000, //tropos pliromis
 				'shipmentID'=> 1,//tropos apostolis
